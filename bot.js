@@ -482,6 +482,16 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
   }
 });
 
+// Встроенный HTTP health-сервер для Render.com / Railway
+const http = require("http");
+const port = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+  res.end("AKILUM • Анонимные вопросы работают 24/7!");
+}).listen(port, () => {
+  console.log(`✓ HTTP сервер для Render запущен на порту ${port}`);
+});
+
 // Запуск
 async function main() {
   await initBotProfile();
