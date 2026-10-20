@@ -22,10 +22,13 @@ if (!token) {
 const bot = new Bot(token);
 const botUsername = process.env.BOT_USERNAME || "akilum_anon_bot";
 
+// Глобальный перехват ошибок для стабильной 24/7 работы
+bot.catch((err) => {
+  console.error("Telegram bot error:", err.message);
+});
+
 // Состояния пользователей в памяти (userId -> { mode, targetId, targetName, qId })
 const userStates = new Map();
-
-// Защита от спама (userId -> timestamp последнего сообщения)
 const lastMsgTimes = new Map();
 
 function escapeHtml(text) {
@@ -39,31 +42,45 @@ function escapeHtml(text) {
 function getShareUrl(userId) {
   const link = `https://t.me/${botUsername}?start=anon_${userId}`;
   const text = encodeURIComponent(
-    "Задай мне вопрос анонимно. Я не узнаю, кто ты:"
+    "Задай мне вопрос или признайся в чём-то анонимно 🤫"
   );
   return `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`;
 }
+
+const RANDOM_QUESTIONS = [
+  "В кого ты тайно влюблен(а) прямо сейчас? 👀",
+  "Твой самый кринжовый момент в жизни? 💀",
+  "Что обо мне думают твои друзья? 🤫",
+  "Если бы мы пошли гулять, куда бы позвал(а)? ✨",
+  "Оцени меня от 1 до 10 честно 🔥",
+  "Какой твой самый главный секрет? 🤐",
+  "Честно: я тебе нравлюсь? 😉",
+  "Какой самый безумный поступок ты делал(а)? 🚀",
+  "Ты веришь в любовь с первого взгляда? 💔",
+  "Какая твоя самая странная привычка? 😂",
+  "Что бы ты изменил(а) во мне? 💭",
+  "Кто тебе сейчас нравится? 🤫",
+  "С кем бы ты хотел(а) застрять в лифте? 🙈",
+  "Самое милое воспоминание обо мне? 🥹",
+];
 
 // Установка описания и команд бота в Telegram API
 async function initBotProfile() {
   try {
     await bot.api.setMyCommands([
-      { command: "start", description: "Моя ссылка и профиль" },
-      { command: "story", description: "Карточка для Сторис" },
-      { command: "stats", description: "Статистика активности" },
-      { command: "help", description: "Как это работает" },
+      { command: "start", description: "Моя ссылка" },
+      { command: "story", description: "Картинка для Сторис" },
+      { command: "stats", description: "Статистика" },
     ]);
     await bot.api.setMyDescription(
-      "AKILUM // анонимные вопросы и признания нового поколения.\n\n" +
-      "Создай свою секретную ссылку для Instagram и Telegram Stories. " +
-      "Узнай, о чём молчат твои друзья и подписчики — 100% анонимно и конфиденциально."
+      "AKILUM — анонимные вопросы для Instagram и Telegram Stories.\n\n" +
+      "Получай честные признания и вопросы от друзей, сохраняя 100% анонимность."
     );
     await bot.api.setMyShortDescription(
-      "AKILUM — анонимные вопросы и секреты для твоих Stories ⚡"
+      "Анонимные вопросы и признания для твоих Stories 🤫"
     );
-    console.log("✓ Профиль и команды бота успешно обновлены в Telegram");
   } catch (e) {
-    console.warn("Предупреждение при обновлении профиля:", e.message);
+    console.warn("Предупреждение профиля:", e.message);
   }
 }
 
@@ -76,66 +93,50 @@ bot.command("start", async (ctx) => {
 
   const payload = ctx.match ? ctx.match.trim() : "";
 
-  // Если переход по реферальной ссылке вида /start anon_123456
+  // Если переход по ссылке вида /start anon_123456
   if (payload.startsWith("anon_")) {
     const targetIdStr = payload.replace("anon_", "");
     const targetId = Number(targetIdStr);
+    const isSelf = targetId === userId;
+    const targetUser = isSelf
+      ? { name: "себя (тест)" }
+      : getUser(targetId) || { name: "пользователя" };
 
-    if (targetId === userId) {
-      await ctx.reply(
-        `<b>AKILUM</b> // система\n\n` +
-        `Это твоя личная ссылка. Её нужно закрепить в Instagram или Telegram Stories, чтобы вопросы задавали тебе.`,
-        {
-          parse_mode: "HTML",
-          reply_markup: new InlineKeyboard()
-            .url("🔗 Поделиться", getShareUrl(userId))
-            .row()
-            .text("⚡ Скачать шаблон для Сторис", "action:promo_card"),
-        }
-      );
-      return;
-    }
-
-    const targetUser = getUser(targetId) || { name: "пользователю" };
     userStates.set(userId, {
       mode: "ask",
       targetId: targetId,
       targetName: targetUser.name,
     });
 
-    const cancelKb = new InlineKeyboard().text("Отмена", "action:cancel");
+    const kb = new InlineKeyboard()
+      .text("🎲 Случайный вопрос", `action:rand_${targetId}`)
+      .text("❌ Отмена", "action:cancel");
 
-    await ctx.reply(
-      `<b>AKILUM</b> // анонимное сообщение\n\n` +
-      `Получатель: <b>${escapeHtml(targetUser.name)}</b>\n` +
-      `Конфиденциальность: <b>100% инкогнито</b>\n\n` +
-      `Напиши всё, что давно хотелось сказать — честный вопрос, мысль или признание. Твой профиль, юзернейм и номер телефона скрыты.\n\n` +
-      `<i>Отправь сообщение прямо в этот чат:</i>`,
-      { parse_mode: "HTML", reply_markup: cancelKb }
-    );
+    const header = isSelf
+      ? `👀 <b>Тестовый режим:</b> ты открыл свою собственную ссылку.\n\nНапиши сообщение, чтобы проверить, как оно приходит:`
+      : `Напиши анонимный вопрос для <b>${escapeHtml(targetUser.name)}</b>:\n<i>(это 100% анонимно 🤫)</i>`;
+
+    await ctx.reply(header, {
+      parse_mode: "HTML",
+      reply_markup: kb,
+    });
     return;
   }
 
-  // Обычный старт: личный кабинет и ссылка
+  // Обычный старт: выдаём ссылку
   userStates.delete(userId);
   const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
 
   const kb = new InlineKeyboard()
-    .url("🔗 Поделиться ссылкой", getShareUrl(userId))
+    .url("🔗 Поделиться", getShareUrl(userId))
     .row()
-    .text("⚡ Карточка для Сторис", "action:promo_card")
-    .text("📊 Статистика", "action:my_stats")
-    .row()
-    .text("Инфо", "action:how_it_works");
+    .text("📸 Картинка для Сторис", "action:promo_card")
+    .text("📊 Статистика", "action:my_stats");
 
   await ctx.reply(
-    `<b>AKILUM</b> // личный кабинет\n\n` +
-    `Твоя персональная ссылка для историй и био:\n` +
-    `<code>${myLink}</code>\n\n` +
-    `<b>Как запустить поток вопросов:</b>\n` +
-    `1. Скопируй ссылку или нажми «Карточка для Сторис».\n` +
-    `2. Выложи в Telegram / Instagram Stories со стикером-ссылкой.\n` +
-    `3. Все входящие сообщения будут моментально приходить сюда.`,
+    `Твоя персональная ссылка для вопросов:\n` +
+    `👉 <code>${myLink}</code>\n\n` +
+    `Прикрепи её в <b>Instagram / Telegram Stories</b>. Вопросы будут приходить сюда 🤫`,
     { parse_mode: "HTML", reply_markup: kb }
   );
 });
@@ -150,11 +151,6 @@ bot.command("stats", async (ctx) => {
   await sendStats(ctx);
 });
 
-// 4. Команда /help
-bot.command("help", async (ctx) => {
-  await sendHelp(ctx);
-});
-
 async function sendPromoCard(ctx) {
   const userId = ctx.from.id;
   const user = getOrCreateUser(userId, ctx.from.first_name);
@@ -164,12 +160,9 @@ async function sendPromoCard(ctx) {
     const pngBuffer = generatePromoCard(user.name, botUsername);
     const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
 
-    await ctx.replyWithPhoto(new InputFile(pngBuffer, "akilum_story.png"), {
+    await ctx.replyWithPhoto(new InputFile(pngBuffer, "story.png"), {
       caption:
-        `<b>AKILUM</b> // шаблон для Сторис\n\n` +
-        `1. Сохрани картинку.\n` +
-        `2. Загрузи в Stories (Instagram / Telegram).\n` +
-        `3. Прикрепи стикер-ссылку в рамку:\n` +
+        `Выложи эту картинку в Stories и прикрепи стикер-ссылку:\n` +
         `<code>${myLink}</code>`,
       parse_mode: "HTML",
       reply_markup: new InlineKeyboard().url(
@@ -178,8 +171,8 @@ async function sendPromoCard(ctx) {
       ),
     });
   } catch (err) {
-    console.error("Ошибка генерации промо-карточки:", err.message);
-    await ctx.reply("Не удалось сгенерировать карточку, повторите позже.");
+    console.error("Ошибка промо-карточки:", err.message);
+    await ctx.reply("Не удалось создать карточку.");
   }
 }
 
@@ -189,54 +182,31 @@ async function sendStats(ctx) {
   const global = getGlobalStats();
 
   await ctx.reply(
-    `<b>AKILUM</b> // статистика\n\n` +
-    `• Получено сообщений: <b>${user.questionsReceived || 0}</b>\n` +
+    `📊 <b>Твоя статистика:</b>\n` +
+    `• Получено вопросов: <b>${user.questionsReceived || 0}</b>\n` +
     `• Отправлено ответов: <b>${user.repliesSent || 0}</b>\n\n` +
-    `<b>Сеть AKILUM:</b>\n` +
-    `• Активных профилей: <b>${global.totalUsers}</b>\n` +
-    `• Доставлено вопросов: <b>${global.totalQuestions}</b>`,
-    {
-      parse_mode: "HTML",
-      reply_markup: new InlineKeyboard().url(
-        "🔗 Поделиться ссылкой",
-        getShareUrl(userId)
-      ),
-    }
-  );
-}
-
-async function sendHelp(ctx) {
-  await ctx.reply(
-    `<b>AKILUM</b> // руководство\n\n` +
-    `• <b>Ссылка</b>: У каждого пользователя есть персональная ссылка (/start).\n` +
-    `• <b>Анонимность</b>: Тот, кто пишет тебе сообщение, остаётся абсолютно скрыт.\n` +
-    `• <b>Публикация</b>: Под каждым вопросом доступна кнопка <b>[⚡ Карточка для Сторис]</b> для публикации ответа.\n` +
-    `• <b>Диалог</b>: Ты можешь ответить отправителю анонимно прямо через бота.`,
+    `🌐 Всего в AKILUM: <b>${global.totalUsers}</b> пользователей`,
     { parse_mode: "HTML" }
   );
 }
 
-// 5. Обработка текстовых сообщений
+// 4. Обработка текстовых сообщений
 bot.on("message:text", async (ctx) => {
   const userId = ctx.from.id;
   const text = ctx.message.text.trim();
   const state = userStates.get(userId);
 
-  // 5.1. Режим отправки анонимного вопроса
+  // Режим отправки анонимного вопроса
   if (state && state.mode === "ask") {
     const lastTime = lastMsgTimes.get(userId) || 0;
-    if (Date.now() - lastTime < 3000) {
-      await ctx.reply("Подожди 3 секунды перед отправкой следующего сообщения.");
+    if (Date.now() - lastTime < 2000) {
+      await ctx.reply("Подожди 2 секунды перед следующим сообщением.");
       return;
     }
     lastMsgTimes.set(userId, Date.now());
 
     if (text.length < 2) {
-      await ctx.reply("Сообщение слишком короткое.");
-      return;
-    }
-    if (text.length > 800) {
-      await ctx.reply("Лимит превышен: максимум 800 символов.");
+      await ctx.reply("Слишком короткое сообщение.");
       return;
     }
 
@@ -245,13 +215,11 @@ bot.on("message:text", async (ctx) => {
 
     // Подтверждение автору
     await ctx.reply(
-      `<b>AKILUM</b> // доставлено\n\n` +
-      `Твоё анонимное сообщение успешно передано для <b>${escapeHtml(state.targetName)}</b>.\n` +
-      `Если на него ответят, ты получишь уведомление здесь.`,
+      `✓ <b>Вопрос отправлен анонимно!</b> 💌`,
       {
         parse_mode: "HTML",
         reply_markup: new InlineKeyboard().url(
-          "🔗 Получить свою ссылку",
+          "🔗 Моя ссылка для вопросов",
           `https://t.me/${botUsername}?start=menu`
         ),
       }
@@ -259,44 +227,37 @@ bot.on("message:text", async (ctx) => {
 
     // Доставка получателю
     const recipientKb = new InlineKeyboard()
-      .text("⚡ Карточка для Сторис", `action:card_${q.id}`)
+      .text("📸 Создать сторис", `action:card_${q.id}`)
       .row()
-      .text("↩️ Ответить анониму", `action:reply_${q.id}`)
-      .text("👁 Радар", `action:hint_${q.id}`);
+      .text("💬 Ответить", `action:reply_${q.id}`);
 
     try {
       await bot.api.sendMessage(
         state.targetId,
-        `<b>AKILUM</b> // новое сообщение\n\n` +
-        `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
-        `<i>Отправитель анонимен.</i>`,
+        `💌 <b>Новый анонимный вопрос:</b>\n\n` +
+        `<blockquote>${escapeHtml(text)}</blockquote>`,
         { parse_mode: "HTML", reply_markup: recipientKb }
       );
     } catch (sendErr) {
-      console.warn("Не удалось доставить сообщение получателю:", sendErr.message);
+      console.warn("Не удалось доставить вопрос:", sendErr.message);
     }
     return;
   }
 
-  // 5.2. Режим ответа анониму
+  // Режим ответа анониму
   if (state && state.mode === "reply") {
     const q = getQuestion(state.qId);
     userStates.delete(userId);
 
     if (!q) {
-      await ctx.reply("Вопрос устарел или не найден.");
+      await ctx.reply("Вопрос не найден.");
       return;
     }
 
     setQuestionReply(q.id, text);
+    await ctx.reply(`✓ <b>Ответ отправлен!</b>`, { parse_mode: "HTML" });
 
-    await ctx.reply(
-      `<b>AKILUM</b> // ответ отправлен\n\n` +
-      `Твой ответ передан анонимному отправителю.`,
-      { parse_mode: "HTML" }
-    );
-
-    // Доставка автору вопроса
+    // Доставка автору
     const askAgainKb = new InlineKeyboard().text(
       "💬 Написать ещё",
       `action:askagain_${q.targetId}`
@@ -305,36 +266,34 @@ bot.on("message:text", async (ctx) => {
     try {
       await bot.api.sendMessage(
         q.senderId,
-        `<b>AKILUM</b> // ответ на твой вопрос\n\n` +
-        `Твой вопрос:\n` +
+        `💬 <b>Ответ на твой анонимный вопрос:</b>\n\n` +
+        `Вопрос:\n` +
         `<blockquote>${escapeHtml(q.text)}</blockquote>\n\n` +
         `Ответ:\n` +
         `<blockquote>${escapeHtml(text)}</blockquote>`,
         { parse_mode: "HTML", reply_markup: askAgainKb }
       );
     } catch (e) {
-      console.warn("Не удалось доставить ответ автору:", e.message);
+      console.warn("Не удалось доставить ответ:", e.message);
     }
     return;
   }
 
-  // Сообщение вне диалога: напоминание ссылки
+  // Если написали текст просто так
   const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
   await ctx.reply(
-    `<b>AKILUM</b>\n\n` +
-    `Твоя ссылка для вопросов:\n` +
-    `<code>${myLink}</code>`,
+    `Твоя ссылка для вопросов:\n👉 <code>${myLink}</code>`,
     {
       parse_mode: "HTML",
       reply_markup: new InlineKeyboard()
         .url("🔗 Поделиться", getShareUrl(userId))
         .row()
-        .text("⚡ Карточка для Сторис", "action:promo_card"),
+        .text("📸 Картинка для Сторис", "action:promo_card"),
     }
   );
 });
 
-// 6. Callback Queries
+// 5. Обработка Callback кнопок
 bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
   const action = ctx.match[1];
   const userId = ctx.from.id;
@@ -342,7 +301,7 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
   if (action === "cancel") {
     userStates.delete(userId);
     await ctx.answerCallbackQuery({ text: "Отменено" });
-    await ctx.reply("Действие отменено.", {
+    await ctx.reply("Отменено.", {
       reply_markup: new InlineKeyboard().url(
         "🔗 Моя ссылка",
         `https://t.me/${botUsername}?start=menu`
@@ -363,17 +322,91 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
     return;
   }
 
-  if (action === "how_it_works") {
+  // Случайный вопрос (рандомайзер)
+  if (action.startsWith("rand_") || action.startsWith("nextrand_")) {
     await ctx.answerCallbackQuery();
-    await sendHelp(ctx);
+    const targetId = Number(action.replace(/^(rand_|nextrand_)/, ""));
+    const targetUser = getUser(targetId) || { name: "пользователя" };
+    const randQ = RANDOM_QUESTIONS[Math.floor(Math.random() * RANDOM_QUESTIONS.length)];
+
+    const kb = new InlineKeyboard()
+      .text("🚀 Отправить этот вопрос", `action:sendrand_${targetId}_${encodeURIComponent(randQ)}`)
+      .row()
+      .text("🎲 Другой вопрос", `action:nextrand_${targetId}`)
+      .text("✏️ Написать свой", `action:custom_${targetId}`);
+
+    await ctx.reply(
+      `Случайный вопрос для <b>${escapeHtml(targetUser.name)}</b>:\n\n` +
+      `«<b>${escapeHtml(randQ)}</b>»`,
+      { parse_mode: "HTML", reply_markup: kb }
+    );
     return;
   }
 
-  // 6.5. Генерация карточки с вопросом для Сторис (card_qId)
+  // Отправка выбранного случайного вопроса в 1 клик!
+  if (action.startsWith("sendrand_")) {
+    await ctx.answerCallbackQuery({ text: "Отправляю..." });
+    const parts = action.split("_");
+    const targetId = Number(parts[1]);
+    const text = decodeURIComponent(parts.slice(2).join("_"));
+
+    const q = saveQuestion(targetId, userId, text);
+    userStates.delete(userId);
+
+    await ctx.reply(`✓ <b>Вопрос отправлен анонимно!</b> 💌`, {
+      parse_mode: "HTML",
+      reply_markup: new InlineKeyboard().url(
+        "🔗 Моя ссылка для вопросов",
+        `https://t.me/${botUsername}?start=menu`
+      ),
+    });
+
+    // Доставка получателю
+    const recipientKb = new InlineKeyboard()
+      .text("📸 Создать сторис", `action:card_${q.id}`)
+      .row()
+      .text("💬 Ответить", `action:reply_${q.id}`);
+
+    try {
+      await bot.api.sendMessage(
+        targetId,
+        `💌 <b>Новый анонимный вопрос:</b>\n\n` +
+        `<blockquote>${escapeHtml(text)}</blockquote>`,
+        { parse_mode: "HTML", reply_markup: recipientKb }
+      );
+    } catch (e) {
+      console.warn("Ошибка доставки:", e.message);
+    }
+    return;
+  }
+
+  // Вернуться к вводу своего вопроса
+  if (action.startsWith("custom_")) {
+    await ctx.answerCallbackQuery();
+    const targetId = Number(action.replace("custom_", ""));
+    const targetUser = getUser(targetId) || { name: "пользователя" };
+
+    userStates.set(userId, {
+      mode: "ask",
+      targetId: targetId,
+      targetName: targetUser.name,
+    });
+
+    await ctx.reply(
+      `Напиши свой анонимный вопрос для <b>${escapeHtml(targetUser.name)}</b> в этот чат:`,
+      {
+        parse_mode: "HTML",
+        reply_markup: new InlineKeyboard().text("❌ Отмена", "action:cancel"),
+      }
+    );
+    return;
+  }
+
+  // Генерация карточки с вопросом для Сторис
   if (action.startsWith("card_")) {
     const qId = action.replace("card_", "");
     const q = getQuestion(qId);
-    await ctx.answerCallbackQuery({ text: "Генерирую карточку..." });
+    await ctx.answerCallbackQuery({ text: "Создаю карточку..." });
 
     if (!q) {
       await ctx.reply("Вопрос не найден.");
@@ -385,23 +418,19 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
       const user = getUser(userId) || { name: ctx.from.first_name };
       const pngBuffer = generateQuestionCard(q.text, user.name);
 
-      await ctx.replyWithPhoto(new InputFile(pngBuffer, `question_${qId}.png`), {
+      await ctx.replyWithPhoto(new InputFile(pngBuffer, `story_${qId}.png`), {
         caption:
-          `<b>AKILUM</b> // карточка для Сторис\n\n` +
-          `1. Сохрани изображение.\n` +
-          `2. Опубликуй в Stories и напиши свой ответ.\n` +
-          `3. Стикер со ссылкой можно прикрепить в нижней рамке.`,
-        parse_mode: "HTML",
+          `Готово! Сохрани картинку, выложи в Сторис и напиши свой ответ 🔥`,
         reply_to_message_id: ctx.callbackQuery.message?.message_id,
       });
     } catch (err) {
-      console.error("Ошибка генерации карточки:", err.message);
+      console.error("Ошибка карточки:", err.message);
       await ctx.reply("Не удалось создать карточку.");
     }
     return;
   }
 
-  // 6.6. Ответ анониму (reply_qId)
+  // Ответ анониму
   if (action.startsWith("reply_")) {
     const qId = action.replace("reply_", "");
     const q = getQuestion(qId);
@@ -418,38 +447,17 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
     });
 
     await ctx.reply(
-      `<b>AKILUM</b> // ответ анониму\n\n` +
-      `Вопрос:\n` +
-      `<blockquote>${escapeHtml(q.text)}</blockquote>\n\n` +
-      `<i>Напиши свой ответ в этот чат (он будет передан анонимно):</i>`,
+      `Напиши ответ на вопрос:\n` +
+      `<blockquote>${escapeHtml(q.text)}</blockquote>`,
       {
         parse_mode: "HTML",
-        reply_markup: new InlineKeyboard().text("Отмена", "action:cancel"),
+        reply_markup: new InlineKeyboard().text("❌ Отмена", "action:cancel"),
       }
     );
     return;
   }
 
-  // 6.7. Радар (hint_qId)
-  if (action.startsWith("hint_")) {
-    await ctx.answerCallbackQuery();
-    const clients = ["Telegram iOS", "Telegram Android", "Telegram Desktop"];
-    const client = clients[Math.floor(Math.random() * clients.length)];
-    const timeSlots = ["несколько минут назад", "в течение последнего часа"];
-    const timeSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
-
-    await ctx.reply(
-      `<b>AKILUM RADAR</b> // данные сессии\n\n` +
-      `• Платформа: <b>${client}</b>\n` +
-      `• Время отправки: <b>${timeSlot}</b>\n` +
-      `• Источник: <b>Внешний переход по ссылке</b>\n\n` +
-      `<i>Личность отправителя защищена сквозным протоколом анонимности.</i>`,
-      { parse_mode: "HTML" }
-    );
-    return;
-  }
-
-  // 6.8. Написать ещё анонимно
+  // Написать ещё анонимно
   if (action.startsWith("askagain_")) {
     const targetId = Number(action.replace("askagain_", ""));
     const targetUser = getUser(targetId) || { name: "пользователю" };
@@ -462,12 +470,12 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
     });
 
     await ctx.reply(
-      `<b>AKILUM</b> // продолжение диалога\n\n` +
-      `Получатель: <b>${escapeHtml(targetUser.name)}</b>\n\n` +
-      `<i>Напиши следующее сообщение в этот чат:</i>`,
+      `Напиши следующее сообщение для <b>${escapeHtml(targetUser.name)}</b>:`,
       {
         parse_mode: "HTML",
-        reply_markup: new InlineKeyboard().text("Отмена", "action:cancel"),
+        reply_markup: new InlineKeyboard()
+          .text("🎲 Случайный вопрос", `action:rand_${targetId}`)
+          .text("❌ Отмена", "action:cancel"),
       }
     );
     return;
@@ -478,7 +486,7 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
 async function main() {
   await initBotProfile();
   bot.start();
-  console.log(`⚡ [AKILUM] Cyber Streetwear Bot @${botUsername} запущен и готов к работе.`);
+  console.log(`🚀 [AKILUM] NGL-style bot @${botUsername} успешно запущен.`);
 }
 
 main().catch(console.error);
