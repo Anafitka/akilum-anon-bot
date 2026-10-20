@@ -21,6 +21,7 @@ if (!token) {
 
 const bot = new Bot(token);
 const botUsername = process.env.BOT_USERNAME || "akilum_anon_bot";
+const OWNER_ID = Number(process.env.OWNER_ID) || 8513097259;
 
 // Глобальный перехват ошибок для стабильной 24/7 работы
 bot.catch((err) => {
@@ -123,21 +124,43 @@ bot.command("start", async (ctx) => {
     return;
   }
 
-  // Обычный старт: выдаём ссылку
+  // Обычный старт: если зашёл владелец бота — показываем его кабинет
   userStates.delete(userId);
   const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
 
-  const kb = new InlineKeyboard()
-    .url("🔗 Поделиться", getShareUrl(userId))
+  if (userId === OWNER_ID) {
+    const kb = new InlineKeyboard()
+      .url("🔗 Поделиться", getShareUrl(userId))
+      .row()
+      .text("📸 Картинка для Сторис", "action:promo_card")
+      .text("📊 Статистика", "action:my_stats");
+
+    await ctx.reply(
+      `Твоя персональная ссылка для вопросов:\n` +
+      `👉 <code>${myLink}</code>\n\n` +
+      `Прикрепи её в <b>Instagram / Telegram Stories</b>. Вопросы будут приходить сюда 🤫`,
+      { parse_mode: "HTML", reply_markup: kb }
+    );
+    return;
+  }
+
+  // Если зашёл сторонний пользователь (нашёл бота в поиске)
+  userStates.set(userId, {
+    mode: "ask",
+    targetId: OWNER_ID,
+    targetName: "тебя",
+  });
+
+  const strangerKb = new InlineKeyboard()
+    .text("🎲 Случайный вопрос", `action:rand_${OWNER_ID}`)
     .row()
-    .text("📸 Картинка для Сторис", "action:promo_card")
-    .text("📊 Статистика", "action:my_stats");
+    .text("🔗 Создать свою ссылку", "action:my_own_link");
 
   await ctx.reply(
-    `Твоя персональная ссылка для вопросов:\n` +
-    `👉 <code>${myLink}</code>\n\n` +
-    `Прикрепи её в <b>Instagram / Telegram Stories</b>. Вопросы будут приходить сюда 🤫`,
-    { parse_mode: "HTML", reply_markup: kb }
+    `Напиши анонимный вопрос:\n` +
+    `<i>(это 100% анонимно 🤫)</i>\n\n` +
+    `👇 Отправь сообщение прямо сюда в чат:`,
+    { parse_mode: "HTML", reply_markup: strangerKb }
   );
 });
 
@@ -280,6 +303,38 @@ bot.on("message:text", async (ctx) => {
   }
 
   // Если написали текст просто так
+  if (userId !== OWNER_ID) {
+    const q = saveQuestion(OWNER_ID, userId, text);
+    await ctx.reply(
+      `✓ <b>Вопрос отправлен анонимно!</b> 💌`,
+      {
+        parse_mode: "HTML",
+        reply_markup: new InlineKeyboard().url(
+          "🔗 Моя ссылка для вопросов",
+          `https://t.me/${botUsername}?start=menu`
+        ),
+      }
+    );
+
+    // Доставка владельцу
+    const recipientKb = new InlineKeyboard()
+      .text("📸 Создать сторис", `action:card_${q.id}`)
+      .row()
+      .text("💬 Ответить", `action:reply_${q.id}`);
+
+    try {
+      await bot.api.sendMessage(
+        OWNER_ID,
+        `💌 <b>Новый анонимный вопрос из поиска Telegram:</b>\n\n` +
+        `<blockquote>${escapeHtml(text)}</blockquote>`,
+        { parse_mode: "HTML", reply_markup: recipientKb }
+      );
+    } catch (e) {
+      console.warn("Ошибка доставки владельцу:", e.message);
+    }
+    return;
+  }
+
   const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
   await ctx.reply(
     `Твоя ссылка для вопросов:\n👉 <code>${myLink}</code>`,
@@ -307,6 +362,25 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
         `https://t.me/${botUsername}?start=menu`
       ),
     });
+    return;
+  }
+
+  if (action === "my_own_link") {
+    userStates.delete(userId);
+    await ctx.answerCallbackQuery();
+    const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
+    const kb = new InlineKeyboard()
+      .url("🔗 Поделиться", getShareUrl(userId))
+      .row()
+      .text("📸 Картинка для Сторис", "action:promo_card")
+      .text("📊 Статистика", "action:my_stats");
+
+    await ctx.reply(
+      `Твоя персональная ссылка для вопросов:\n` +
+      `👉 <code>${myLink}</code>\n\n` +
+      `Прикрепи её в <b>Instagram / Telegram Stories</b>. Вопросы будут приходить сюда 🤫`,
+      { parse_mode: "HTML", reply_markup: kb }
+    );
     return;
   }
 
