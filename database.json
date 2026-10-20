@@ -2,16 +2,25 @@
   "users": {
     "8513097259": {
       "id": 8513097259,
-      "name": "ラムさん",
+      "name": "Пользователь",
       "username": "@akiluns",
-      "questionsReceived": 0,
+      "questionsReceived": 1,
       "repliesSent": 0,
       "createdAt": "2026-10-20T18:20:29.676Z"
     }
   },
-  "questions": {},
+  "questions": {
+    "q_mvh0vly4a3gq": {
+      "id": "q_mvh0vly4a3gq",
+      "targetId": 8513097259,
+      "senderId": 8513097259,
+      "text": "ввв",
+      "createdAt": 1792521262300,
+      "replyText": null
+    }
+  },
   "stats": {
-    "totalQuestions": 0,
+    "totalQuestions": 1,
     "totalReplies": 0
   }
 }
