@@ -1,0 +1,17 @@
+{
+  "users": {
+    "8513097259": {
+      "id": 8513097259,
+      "name": "ラムさん",
+      "username": "@akiluns",
+      "questionsReceived": 0,
+      "repliesSent": 0,
+      "createdAt": "2026-10-20T18:20:29.676Z"
+    }
+  },
+  "questions": {},
+  "stats": {
+    "totalQuestions": 0,
+    "totalReplies": 0
+  }
+}
