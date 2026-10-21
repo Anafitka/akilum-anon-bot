@@ -80,6 +80,15 @@ async function initBotProfile() {
     await bot.api.setMyShortDescription(
       "Анонимные вопросы и признания для твоих Stories 🤫"
     );
+    // Кнопка Mini App в нижнем меню
+    await bot.api.setChatMenuButton({
+      menu_button: {
+        type: "web_app",
+        text: "⚡ Открыть Akilum",
+        web_app: { url: "https://akilum-anon-bot.onrender.com" }
+      }
+    });
+    console.log("✓ Профиль и Mini App кнопка настроены");
   } catch (e) {
     console.warn("Предупреждение профиля:", e.message);
   }
@@ -130,6 +139,8 @@ bot.command("start", async (ctx) => {
 
   if (userId === OWNER_ID) {
     const kb = new InlineKeyboard()
+      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com")
+      .row()
       .url("🔗 Поделиться", getShareUrl(userId))
       .row()
       .text("📸 Картинка для Сторис", "action:promo_card")
@@ -138,7 +149,7 @@ bot.command("start", async (ctx) => {
     await ctx.reply(
       `Твоя персональная ссылка для вопросов:\n` +
       `👉 <code>${myLink}</code>\n\n` +
-      `Прикрепи её в <b>Instagram / Telegram Stories</b>. Вопросы будут приходить сюда 🤫`,
+      `Прикрепи её в <b>Instagram / Telegram Stories</b> или открой <b>Mini App</b> внизу 👇`,
       { parse_mode: "HTML", reply_markup: kb }
     );
     return;
@@ -152,8 +163,9 @@ bot.command("start", async (ctx) => {
   });
 
   const strangerKb = new InlineKeyboard()
-    .text("🎲 Случайный вопрос", `action:rand_${OWNER_ID}`)
+    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com")
     .row()
+    .text("🎲 Случайный вопрос", `action:rand_${OWNER_ID}`)
     .text("🔗 Создать свою ссылку", "action:my_own_link");
 
   await ctx.reply(
@@ -556,14 +568,81 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
   }
 });
 
-// Встроенный HTTP health-сервер для Render.com / Railway
+// Встроенный HTTP сервер для Mini App и Render.com
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const port = process.env.PORT || 3000;
-http.createServer((req, res) => {
+
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+  // 1. Статика: аватарка
+  if (url.pathname === "/avatar.png") {
+    const avatarPath = path.join(__dirname, "public", "avatar.png");
+    if (fs.existsSync(avatarPath)) {
+      res.writeHead(200, { "Content-Type": "image/png" });
+      return fs.createReadStream(avatarPath).pipe(res);
+    }
+  }
+
+  // 2. API: получить пользователя
+  if (url.pathname === "/api/user") {
+    const qUserId = Number(url.searchParams.get("id"));
+    const u = getUser(qUserId);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify({ ok: true, user: u }));
+  }
+
+  // 3. API: отправить вопрос из веб-приложения
+  if (url.pathname === "/api/send" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const text = String(data.text || "").trim();
+        const targetId = Number(data.targetId) || OWNER_ID;
+        const senderId = Number(data.senderId) || 0;
+
+        if (text.length >= 2 && text.length <= 800) {
+          const q = saveQuestion(targetId, senderId, text);
+          const recipientKb = new InlineKeyboard()
+            .text("📸 Создать сторис", `action:card_${q.id}`)
+            .row()
+            .text("💬 Ответить", `action:reply_${q.id}`);
+
+          await bot.api.sendMessage(
+            targetId,
+            `💌 <b>Новый анонимный вопрос из Mini App:</b>\n\n<blockquote>${escapeHtml(text)}</blockquote>`,
+            { parse_mode: "HTML", reply_markup: recipientKb }
+          );
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({ ok: true, questionId: q.id }));
+        }
+      } catch (err) {
+        console.error("API send error:", err.message);
+      }
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ ok: false }));
+    });
+    return;
+  }
+
+  // 4. Главная страница (Mini App)
+  const indexPath = path.join(__dirname, "public", "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    return fs.createReadStream(indexPath).pipe(res);
+  }
+
   res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
   res.end("AKILUM • Анонимные вопросы работают 24/7!");
-}).listen(port, () => {
-  console.log(`✓ HTTP сервер для Render запущен на порту ${port}`);
+});
+
+server.listen(port, () => {
+  console.log(`✓ HTTP сервер Mini App запущен на порту ${port}`);
 });
 
 // Запуск
