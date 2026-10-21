@@ -60,7 +60,7 @@ function getUser(userId) {
   return data.users[String(userId)] || null;
 }
 
-function saveQuestion(targetId, senderId, text) {
+function saveQuestion(targetId, senderId, text, options = {}) {
   const qId = "q_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   data.questions[qId] = {
     id: qId,
@@ -69,14 +69,37 @@ function saveQuestion(targetId, senderId, text) {
     text: text.trim(),
     createdAt: Date.now(),
     replyText: null,
+    isSuper: !!options.isSuper,
+    stars: Number(options.stars) || 0,
+    theme: options.theme || "lum",
+    reaction: null,
   };
 
   const target = getOrCreateUser(targetId);
   target.questionsReceived = (target.questionsReceived || 0) + 1;
+  if (options.stars) {
+    target.starsReceived = (target.starsReceived || 0) + Number(options.stars);
+    target.superQuestionsReceived = (target.superQuestionsReceived || 0) + 1;
+  }
   data.stats.totalQuestions = (data.stats.totalQuestions || 0) + 1;
 
   saveDatabase();
   return data.questions[qId];
+}
+
+function addStarsToUser(userId, amount) {
+  const u = getOrCreateUser(userId);
+  u.starsReceived = (u.starsReceived || 0) + Number(amount);
+  saveDatabase();
+  return u;
+}
+
+function saveQuestionReaction(qId, reaction) {
+  const q = data.questions[qId];
+  if (!q) return null;
+  q.reaction = reaction;
+  saveDatabase();
+  return q;
 }
 
 function getQuestion(qId) {
@@ -159,4 +182,6 @@ module.exports = {
   setLatestQuestion,
   getLatestQuestion,
   getUserQuestions,
+  addStarsToUser,
+  saveQuestionReaction,
 };

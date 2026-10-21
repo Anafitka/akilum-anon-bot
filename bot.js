@@ -11,8 +11,11 @@ const {
   setLatestQuestion,
   getLatestQuestion,
   getUserQuestions,
+  addStarsToUser,
+  saveQuestionReaction,
 } = require("./db");
 const {
+  THEMES,
   generateQuestionCard,
   generatePromoCard,
 } = require("./card_generator");
@@ -51,6 +54,16 @@ function getShareUrl(userId) {
     "Задай мне вопрос или признайся в чём-то анонимно 🤫"
   );
   return `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`;
+}
+
+function createAnswerKeyboard(q) {
+  return new InlineKeyboard()
+    .text("🔥", `action:react_${q.id}_🔥`)
+    .text("❤️", `action:react_${q.id}_❤️`)
+    .text("😱", `action:react_${q.id}_😱`)
+    .text("😂", `action:react_${q.id}_😂`)
+    .row()
+    .text("💬 Написать ещё", `action:askagain_${q.targetId}`);
 }
 
 const RANDOM_QUESTIONS = [
@@ -106,13 +119,23 @@ bot.command("start", async (ctx) => {
 
   // Если переход из Mini App для создания сторис
   if (payload.startsWith("card_")) {
-    const qId = payload.replace("card_", "");
+    const raw = payload.replace("card_", "");
+    let qId = raw;
+    let theme = "lum";
+    const knownThemes = ["lum", "gold", "obsidian", "sakura"];
+    for (const t of knownThemes) {
+      if (raw.endsWith("_" + t)) {
+        theme = t;
+        qId = raw.slice(0, -(t.length + 1));
+        break;
+      }
+    }
     const q = getQuestion(qId);
     if (q) {
       await ctx.api.sendChatAction(ctx.chat.id, "upload_photo");
       try {
         const u = getUser(userId) || { name: ctx.from.first_name };
-        const pngBuffer = generateQuestionCard(q.text, u.name);
+        const pngBuffer = generateQuestionCard(q.text, u.name, theme, q.isSuper);
         await ctx.replyWithPhoto(new InputFile(pngBuffer, `story_${qId}.png`), {
           caption: "Готово! Сохрани картинку, выложи в Сторис и напиши свой ответ 🔥",
         });
@@ -124,6 +147,55 @@ bot.command("start", async (ctx) => {
       await ctx.reply("Вопрос не найден.");
     }
     return;
+  }
+
+  // Если переход из Mini App по теме Сторис
+  if (payload.startsWith("story")) {
+    let theme = "lum";
+    let prompt = "";
+    if (payload.startsWith("story_")) {
+      const rest = payload.replace("story_", "");
+      const knownThemes = ["lum", "gold", "obsidian", "sakura"];
+      for (const t of knownThemes) {
+        if (rest === t || rest.startsWith(t + "_")) {
+          theme = t;
+          if (rest.startsWith(t + "_")) {
+            prompt = decodeURIComponent(rest.replace(t + "_", ""));
+          }
+          break;
+        }
+      }
+    }
+    await sendPromoCard(ctx, theme, prompt);
+    return;
+  }
+
+  // Если переход для оплаты Супер-вопроса со Звёздами (Telegram Stars)
+  if (payload.startsWith("super_")) {
+    const rest = payload.replace("super_", "");
+    const firstUnderscore = rest.indexOf("_");
+    if (firstUnderscore !== -1) {
+      const targetId = Number(rest.slice(0, firstUnderscore));
+      const text = decodeURIComponent(rest.slice(firstUnderscore + 1));
+      const targetUser = getUser(targetId) || { name: "пользователя" };
+
+      const invoicePayload = JSON.stringify({ t: targetId, q: text });
+      try {
+        await ctx.api.sendInvoice(
+          ctx.chat.id,
+          "👑 Супер-вопрос с донатом",
+          `Анонимный вопрос для ${targetUser.name} + донат 50 ⭐ Telegram Stars!`,
+          invoicePayload,
+          "", // Валюта Stars не требует токена провайдера
+          "XTR",
+          [{ label: "Супер-вопрос 50 ⭐", amount: 50 }]
+        );
+      } catch (e) {
+        console.error("Ошибка счета Stars:", e.message);
+        await ctx.reply("Не удалось создать счет для оплаты.");
+      }
+      return;
+    }
   }
 
   // Если переход из Mini App для ответа на вопрос
@@ -166,6 +238,8 @@ bot.command("start", async (ctx) => {
 
     const kb = new InlineKeyboard()
       .text("🎲 Случайный вопрос", `action:rand_${targetId}`)
+      .text("👑 Супер-вопрос 50 ⭐", `action:pre_super_${targetId}`)
+      .row()
       .text("❌ Отмена", "action:cancel");
 
     const header = isSelf
@@ -232,16 +306,16 @@ bot.command("stats", async (ctx) => {
   await sendStats(ctx);
 });
 
-async function sendPromoCard(ctx) {
+async function sendPromoCard(ctx, theme = "lum", customPrompt = "") {
   const userId = ctx.from.id;
   const user = getOrCreateUser(userId, ctx.from.first_name);
 
   await ctx.api.sendChatAction(ctx.chat.id, "upload_photo");
   try {
-    const pngBuffer = generatePromoCard(user.name, botUsername);
+    const pngBuffer = generatePromoCard(user.name, botUsername, theme, customPrompt);
     const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
 
-    await ctx.replyWithPhoto(new InputFile(pngBuffer, "story.png"), {
+    await ctx.replyWithPhoto(new InputFile(pngBuffer, `story_${theme}.png`), {
       caption:
         `Выложи эту картинку в Stories и прикрепи стикер-ссылку:\n` +
         `<code>${myLink}</code>`,
@@ -265,7 +339,8 @@ async function sendStats(ctx) {
   await ctx.reply(
     `📊 <b>Твоя статистика:</b>\n` +
     `• Получено вопросов: <b>${user.questionsReceived || 0}</b>\n` +
-    `• Отправлено ответов: <b>${user.repliesSent || 0}</b>\n\n` +
+    `• Отправлено ответов: <b>${user.repliesSent || 0}</b>\n` +
+    `• Заработано Звёзд: <b>⭐ ${user.starsReceived || 0}</b>\n\n` +
     `🌐 Всего в AKILUM: <b>${global.totalUsers}</b> пользователей`,
     { parse_mode: "HTML" }
   );
@@ -290,10 +365,7 @@ bot.on("message:text", async (ctx) => {
           setQuestionReply(q.id, text);
           await ctx.reply(`✓ <b>Ответ отправлен анониму!</b> 💌`, { parse_mode: "HTML" });
 
-          const askAgainKb = new InlineKeyboard().text(
-            "💬 Написать ещё",
-            `action:askagain_${q.targetId}`
-          );
+          const askAgainKb = createAnswerKeyboard(q);
 
           try {
             const sentAnswer = await bot.api.sendMessage(
@@ -303,7 +375,7 @@ bot.on("message:text", async (ctx) => {
               `<blockquote>${escapeHtml(q.text)}</blockquote>\n\n` +
               `Ответ:\n` +
               `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
-              `<i>💡 Свайпни это сообщение вправо, чтобы написать ответное сообщение анонимно!</i>`,
+              `<i>💡 Свайпни это сообщение вправо, чтобы ответить ещё!</i>`,
               { parse_mode: "HTML", reply_markup: askAgainKb }
             );
             linkMessageToQuestion(sentAnswer.message_id, q.senderId, q.id, "answer");
@@ -349,10 +421,7 @@ bot.on("message:text", async (ctx) => {
         setQuestionReply(latestQ.id, text);
         await ctx.reply(`✓ <b>Ответ отправлен анониму!</b> 💌`, { parse_mode: "HTML" });
 
-        const askAgainKb = new InlineKeyboard().text(
-          "💬 Написать ещё",
-          `action:askagain_${latestQ.targetId}`
-        );
+        const askAgainKb = createAnswerKeyboard(latestQ);
 
         try {
           const sentAnswer = await bot.api.sendMessage(
@@ -372,6 +441,35 @@ bot.on("message:text", async (ctx) => {
         return;
       }
     }
+  }
+
+  // Режим отправки Супер-вопроса со Звёздами (Telegram Stars ⭐)
+  if (state && state.mode === "ask_super") {
+    const targetId = state.targetId;
+    const targetUser = getUser(targetId) || { name: "пользователя" };
+    userStates.delete(userId);
+
+    if (text.length < 2) {
+      await ctx.reply("Слишком короткое сообщение.");
+      return;
+    }
+
+    const invoicePayload = JSON.stringify({ t: targetId, q: text });
+    try {
+      await ctx.api.sendInvoice(
+        ctx.chat.id,
+        "👑 Супер-вопрос с донатом",
+        `Анонимный вопрос для ${targetUser.name} + донат 50 ⭐ Telegram Stars!`,
+        invoicePayload,
+        "",
+        "XTR",
+        [{ label: "Супер-вопрос 50 ⭐", amount: 50 }]
+      );
+    } catch (e) {
+      console.error("Ошибка счета Stars:", e.message);
+      await ctx.reply("Не удалось создать счет для оплаты.");
+    }
+    return;
   }
 
   // Режим отправки анонимного вопроса (по кнопке или ссылке)
@@ -439,10 +537,7 @@ bot.on("message:text", async (ctx) => {
     await ctx.reply(`✓ <b>Ответ отправлен!</b>`, { parse_mode: "HTML" });
 
     // Доставка автору
-    const askAgainKb = new InlineKeyboard().text(
-      "💬 Написать ещё",
-      `action:askagain_${q.targetId}`
-    );
+    const askAgainKb = createAnswerKeyboard(q);
 
     try {
       const sentAnswer = await bot.api.sendMessage(
@@ -656,7 +751,7 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
     await ctx.api.sendChatAction(ctx.chat.id, "upload_photo");
     try {
       const user = getUser(userId) || { name: ctx.from.first_name };
-      const pngBuffer = generateQuestionCard(q.text, user.name);
+      const pngBuffer = generateQuestionCard(q.text, user.name, q.theme || "lum", q.isSuper);
 
       await ctx.replyWithPhoto(new InputFile(pngBuffer, `story_${qId}.png`), {
         caption:
@@ -667,6 +762,55 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
       console.error("Ошибка карточки:", err.message);
       await ctx.reply("Не удалось создать карточку.");
     }
+    return;
+  }
+
+  // Реакция на ответ (🔥, ❤️, 😱, 😂)
+  if (action.startsWith("react_")) {
+    const parts = action.split("_");
+    const qId = parts[1];
+    const emoji = parts.slice(2).join("_");
+    const q = getQuestion(qId);
+    await ctx.answerCallbackQuery({ text: `Реакция отправлена: ${emoji}` });
+    if (q) {
+      saveQuestionReaction(q.id, emoji);
+      try {
+        await bot.api.sendMessage(
+          q.targetId,
+          `${emoji} <b>Аноним отреагировал на твой ответ!</b>\n\n` +
+          `Вопрос: <i>«${escapeHtml(q.text)}»</i>\n` +
+          `Твой ответ: <i>«${escapeHtml(q.replyText || "")}»</i>\n\n` +
+          `Реакция: <b>${emoji}</b>`,
+          { parse_mode: "HTML" }
+        );
+      } catch (e) {
+        console.warn("Ошибка доставки реакции:", e.message);
+      }
+    }
+    return;
+  }
+
+  // Запуск Супер-вопроса со Звёздами
+  if (action.startsWith("pre_super_")) {
+    const targetId = Number(action.replace("pre_super_", ""));
+    const targetUser = getUser(targetId) || { name: "пользователя" };
+    await ctx.answerCallbackQuery();
+
+    userStates.set(userId, {
+      mode: "ask_super",
+      targetId: targetId,
+      targetName: targetUser.name,
+    });
+
+    await ctx.reply(
+      `👑 <b>Режим Супер-вопроса со Звёздами (Telegram Stars ⭐)</b>\n\n` +
+      `Напиши анонимный вопрос для <b>${escapeHtml(targetUser.name)}</b>.\n\n` +
+      `После отправки текста откроется оплата 50 ⭐, которые будут начислены автору в качестве доната, а твой вопрос получит золотую VIP-рамку! 🔥`,
+      {
+        parse_mode: "HTML",
+        reply_markup: new InlineKeyboard().text("❌ Отмена", "action:cancel"),
+      }
+    );
     return;
   }
 
@@ -719,6 +863,54 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
       }
     );
     return;
+  }
+});
+
+// 6. Платежи через Telegram Stars (XTR)
+bot.on("pre_checkout_query", async (ctx) => {
+  await ctx.answerPreCheckoutQuery(true);
+});
+
+bot.on("message:successful_payment", async (ctx) => {
+  const payment = ctx.message.successful_payment;
+  const payloadRaw = payment.invoice_payload;
+  try {
+    const data = JSON.parse(payloadRaw);
+    const targetId = Number(data.t) || OWNER_ID;
+    const text = String(data.q || "").trim();
+    const stars = payment.total_amount;
+
+    const q = saveQuestion(targetId, ctx.from.id, text, {
+      isSuper: true,
+      stars: stars,
+      theme: "gold",
+    });
+
+    // Подтверждение отправителю
+    await ctx.reply(
+      `✨ <b>Супер-вопрос успешно отправлен!</b> 💌\n\n` +
+      `Донат <b>${stars} ⭐</b> начислен автору. Твой вопрос подсвечен золотой VIP-рамкой!`,
+      { parse_mode: "HTML" }
+    );
+
+    // Доставка получателю
+    const recipientKb = new InlineKeyboard()
+      .text("📸 Создать сторис (VIP)", `action:card_${q.id}`)
+      .row()
+      .text("💬 Ответить", `action:reply_${q.id}`);
+
+    const sentMsg = await bot.api.sendMessage(
+      targetId,
+      `👑 <b>ВНИМАНИЕ: СУПЕР-ВОПРОС С ДОНАТОМ (${stars} ⭐)!</b>\n\n` +
+      `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+      `💰 <i>Тебе начислен донат <b>${stars} Звёзд Telegram</b> от анонима!</i>\n\n` +
+      `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
+      { parse_mode: "HTML", reply_markup: recipientKb }
+    );
+    linkMessageToQuestion(sentMsg.message_id, targetId, q.id, "question");
+    setLatestQuestion(targetId, q.id);
+  } catch (err) {
+    console.error("Ошибка обработки оплаты Stars:", err.message);
   }
 });
 

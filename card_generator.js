@@ -27,11 +27,57 @@ function wrapText(text, maxCharsPerLine = 22) {
   return lines;
 }
 
+const THEMES = {
+  lum: {
+    bgGrad: `<stop offset="0%" stop-color="#00F5D4"/><stop offset="45%" stop-color="#00C896"/><stop offset="100%" stop-color="#FFD600"/>`,
+    cardBg: "#ffffff",
+    cardBorder: "#ffffff",
+    textColor: "#111827",
+    badgeBg: "#f3f4f6",
+    badgeText: "#4b5563",
+    badgeLabel: "⚡ анонимно",
+    watermarkText: "#9ca3af",
+    accentColor: "#00C896",
+  },
+  gold: {
+    bgGrad: `<stop offset="0%" stop-color="#FFE259"/><stop offset="50%" stop-color="#FFA751"/><stop offset="100%" stop-color="#FF5722"/>`,
+    cardBg: "#121118",
+    cardBorder: "#FFD700",
+    textColor: "#ffffff",
+    badgeBg: "rgba(255, 215, 0, 0.22)",
+    badgeText: "#FFD700",
+    badgeLabel: "👑 СУПЕР-ВОПРОС",
+    watermarkText: "#e5c058",
+    accentColor: "#FFD700",
+  },
+  obsidian: {
+    bgGrad: `<stop offset="0%" stop-color="#050608"/><stop offset="50%" stop-color="#141824"/><stop offset="100%" stop-color="#08090d"/>`,
+    cardBg: "#11141c",
+    cardBorder: "rgba(255, 255, 255, 0.16)",
+    textColor: "#ffffff",
+    badgeBg: "rgba(255, 255, 255, 0.08)",
+    badgeText: "#9aa3b2",
+    badgeLabel: "🖤 stealth",
+    watermarkText: "#5f687a",
+    accentColor: "#ffffff",
+  },
+  sakura: {
+    bgGrad: `<stop offset="0%" stop-color="#FF2A85"/><stop offset="50%" stop-color="#8A2387"/><stop offset="100%" stop-color="#00F0FF"/>`,
+    cardBg: "#ffffff",
+    cardBorder: "#ffffff",
+    textColor: "#111827",
+    badgeBg: "#fdf2f8",
+    badgeText: "#db2777",
+    badgeLabel: "🌸 секрет",
+    watermarkText: "#9ca3af",
+    accentColor: "#db2777",
+  },
+};
+
 /**
  * 1. Карточка с вопросом для Сторис (1080x1920)
- * Точная эстетика вирусного NGL (Instagram / Telegram Stories)
  */
-function generateQuestionCard(questionText, recipientName = "", theme = "sunset") {
+function generateQuestionCard(questionText, recipientName = "", themeKey = "lum", isSuper = false) {
   const lines = wrapText(questionText, 22).slice(0, 6);
   const lineHeight = 66;
   const startY = 870 - ((lines.length - 1) * lineHeight) / 2;
@@ -43,37 +89,24 @@ function generateQuestionCard(questionText, recipientName = "", theme = "sunset"
     )
     .join("\n");
 
-  // Цветовые схемы (фирменный стиль Лам: бирюзовый + изумрудный + электрический золотой)
-  const isDark = theme === "dark";
-  const bgGrad = isDark
-    ? `<stop offset="0%" stop-color="#07090e"/><stop offset="50%" stop-color="#0d1520"/><stop offset="100%" stop-color="#080c12"/>`
-    : `<stop offset="0%" stop-color="#00F5D4"/><stop offset="45%" stop-color="#00C896"/><stop offset="100%" stop-color="#FFD600"/>`;
-
-  const cardBg = isDark ? "#171524" : "#ffffff";
-  const cardBorder = isDark ? "#28233d" : "#ffffff";
-  const textColor = isDark ? "#ffffff" : "#111827";
-  const badgeBg = isDark ? "#231f38" : "#f3f4f6";
-  const badgeText = isDark ? "#a79fc2" : "#6b7280";
-  const watermarkText = isDark ? "#6a6482" : "#9ca3af";
-  const stickerBoxBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.22)";
-  const stickerBoxBorder = isDark ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.4)";
-  const stickerBoxText = isDark ? "#ffffff" : "#ffffff";
+  const effectiveThemeKey = isSuper ? "gold" : (THEMES[themeKey] ? themeKey : "lum");
+  const th = THEMES[effectiveThemeKey];
 
   const svg = `
 <svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      ${bgGrad}
+      ${th.bgGrad}
     </linearGradient>
 
     <!-- Мягкая реалистичная тень как в iOS/Figma -->
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.25"/>
       <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.12"/>
     </filter>
   </defs>
 
-  <!-- Сочный градиентный фон -->
+  <!-- Фон -->
   <rect width="100%" height="100%" fill="url(#bgGradient)"/>
 
   <!-- Верхняя плашка приложения -->
@@ -83,33 +116,33 @@ function generateQuestionCard(questionText, recipientName = "", theme = "sunset"
     </text>
   </g>
 
-  <!-- Главная карточка с вопросом (NGL Style) -->
+  <!-- Главная карточка с вопросом -->
   <g filter="url(#softShadow)">
-    <rect x="80" y="520" width="920" height="640" rx="48" fill="${cardBg}" stroke="${cardBorder}" stroke-width="2"/>
+    <rect x="80" y="520" width="920" height="640" rx="48" fill="${th.cardBg}" stroke="${th.cardBorder}" stroke-width="${isSuper ? 4 : 2}"/>
   </g>
 
   <!-- Бейдж сверху карточки -->
   <g transform="translate(540, 590)">
-    <rect x="-140" y="0" width="280" height="48" rx="24" fill="${badgeBg}"/>
-    <text x="0" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="${badgeText}" text-anchor="middle">
-      🤫 анонимно
+    <rect x="-160" y="0" width="320" height="52" rx="26" fill="${th.badgeBg}"/>
+    <text x="0" y="34" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="${th.badgeText}" text-anchor="middle">
+      ${escapeXml(th.badgeLabel)}
     </text>
   </g>
 
   <!-- Текст вопроса -->
-  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="48" font-weight="800" fill="${textColor}" text-anchor="middle">
+  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="48" font-weight="800" fill="${th.textColor}" text-anchor="middle">
     ${tspanLines}
   </text>
 
   <!-- Нижний водяной знак на карточке -->
-  <text x="540" y="1110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="${watermarkText}" text-anchor="middle" letter-spacing="1">
+  <text x="540" y="1110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="${th.watermarkText}" text-anchor="middle" letter-spacing="1">
     t.me/akilum_anon_bot
   </text>
 
   <!-- Блок под наклейку-ссылку Instagram / Telegram Stories -->
   <g transform="translate(140, 1420)">
-    <rect width="800" height="130" rx="65" fill="${stickerBoxBg}" stroke="${stickerBoxBorder}" stroke-width="2"/>
-    <text x="400" y="60" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="28" font-weight="800" fill="${stickerBoxText}" text-anchor="middle">
+    <rect width="800" height="130" rx="65" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+    <text x="400" y="60" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="28" font-weight="800" fill="#ffffff" text-anchor="middle">
       🔗 ОТВЕТ В СТОРИС
     </text>
     <text x="400" y="98" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="rgba(255,255,255,0.85)" text-anchor="middle">
@@ -127,29 +160,27 @@ function generateQuestionCard(questionText, recipientName = "", theme = "sunset"
 /**
  * 2. Промо-карточка для выкладывания в Сторис, чтобы собирать вопросы
  */
-function generatePromoCard(name = "мне", botUsername = "akilum_anon_bot", theme = "sunset") {
-  const isDark = theme === "dark";
-  const bgGrad = isDark
-    ? `<stop offset="0%" stop-color="#07090e"/><stop offset="50%" stop-color="#0d1520"/><stop offset="100%" stop-color="#080c12"/>`
-    : `<stop offset="0%" stop-color="#00F5D4"/><stop offset="45%" stop-color="#00C896"/><stop offset="100%" stop-color="#FFD600"/>`;
+function generatePromoCard(name = "мне", botUsername = "akilum_anon_bot", themeKey = "lum", customPrompt = "") {
+  const th = THEMES[themeKey] || THEMES.lum;
+  const promptText = customPrompt && customPrompt.trim().length > 3
+    ? customPrompt.trim()
+    : "Напиши мне всё,\nо чём молчишь...";
 
-  const cardBg = isDark ? "#171524" : "#ffffff";
-  const cardBorder = isDark ? "#28233d" : "#ffffff";
-  const textColor = isDark ? "#ffffff" : "#111827";
-  const badgeBg = isDark ? "#231f38" : "#f3f4f6";
-  const badgeText = isDark ? "#a79fc2" : "#6b7280";
-  const stickerBoxBg = isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.22)";
-  const stickerBoxBorder = isDark ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.4)";
+  const promptLines = promptText.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 3);
+  const promptSvg = promptLines.map((l, idx) => 
+    `<text x="0" y="${idx * 70}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="50" font-weight="900" fill="${th.textColor}" text-anchor="middle">${escapeXml(l)}</text>`
+  ).join("\n");
+  const subTextY = promptLines.length * 70 + 70;
 
   const svg = `
 <svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      ${bgGrad}
+      ${th.bgGrad}
     </linearGradient>
 
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.25"/>
       <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.12"/>
     </filter>
   </defs>
@@ -165,38 +196,33 @@ function generatePromoCard(name = "мне", botUsername = "akilum_anon_bot", the
 
   <!-- Карточка призыва к действию (NGL Look) -->
   <g filter="url(#softShadow)">
-    <rect x="80" y="520" width="920" height="620" rx="48" fill="${cardBg}" stroke="${cardBorder}" stroke-width="2"/>
+    <rect x="80" y="520" width="920" height="640" rx="48" fill="${th.cardBg}" stroke="${th.cardBorder}" stroke-width="2"/>
   </g>
 
   <!-- Бейдж -->
   <g transform="translate(540, 590)">
-    <rect x="-160" y="0" width="320" height="48" rx="24" fill="${badgeBg}"/>
-    <text x="0" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="${badgeText}" text-anchor="middle">
-      🎲 спроси меня о чём угодно
+    <rect x="-180" y="0" width="360" height="52" rx="26" fill="${th.badgeBg}"/>
+    <text x="0" y="34" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="${th.badgeText}" text-anchor="middle">
+      🎲 ask me anything
     </text>
   </g>
 
   <!-- Крупный заголовок -->
-  <g transform="translate(540, 770)">
-    <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="52" font-weight="900" fill="${textColor}" text-anchor="middle">
-      Напиши мне всё,
-    </text>
-    <text x="0" y="70" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="52" font-weight="900" fill="${textColor}" text-anchor="middle">
-      о чём молчишь
-    </text>
-    <text x="0" y="160" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#ec4899" text-anchor="middle">
+  <g transform="translate(540, 750)">
+    ${promptSvg}
+    <text x="0" y="${subTextY}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="26" font-weight="800" fill="${th.accentColor}" text-anchor="middle">
       🔒 100% анонимно • Я не узнаю, кто ты
     </text>
   </g>
 
   <!-- Водяной знак -->
-  <text x="540" y="1080" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="${badgeText}" text-anchor="middle" letter-spacing="1">
+  <text x="540" y="1110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="${th.watermarkText}" text-anchor="middle" letter-spacing="1">
     t.me/${escapeXml(botUsername)}
   </text>
 
   <!-- Место под наклейку-ссылку в Instagram / Telegram Stories -->
   <g transform="translate(140, 1420)">
-    <rect width="800" height="130" rx="65" fill="${stickerBoxBg}" stroke="${stickerBoxBorder}" stroke-width="2"/>
+    <rect width="800" height="130" rx="65" fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
     <text x="400" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="28" font-weight="800" fill="#ffffff" text-anchor="middle">
       👆 ПРИКРЕПИ СТИКЕР СЮДА
     </text>
@@ -213,6 +239,7 @@ function generatePromoCard(name = "мне", botUsername = "akilum_anon_bot", the
 }
 
 module.exports = {
+  THEMES,
   generateQuestionCard,
   generatePromoCard,
 };

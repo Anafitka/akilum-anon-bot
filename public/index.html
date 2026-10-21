@@ -413,24 +413,86 @@
       font-weight: 700;
     }
 
+    /* Theme Picker */
+    .theme-picker-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .theme-pill {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-sec);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .theme-pill.active {
+      background: rgba(0, 245, 212, 0.16);
+      border-color: #00F5D4;
+      color: #00F5D4;
+      box-shadow: 0 0 12px rgba(0, 245, 212, 0.3);
+    }
+
+    /* Prompt Chips */
+    .prompt-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .prompt-chip {
+      padding: 6px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-sec);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .prompt-chip.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-super {
+      background: linear-gradient(135deg, #FFE259 0%, #FFA751 50%, #FF5722 100%);
+      color: #0c0800;
+      font-weight: 900;
+      margin-top: 10px;
+      box-shadow: 0 12px 30px -8px rgba(255, 170, 0, 0.45);
+    }
+
     /* Stats Row */
     .metrics-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
       margin-bottom: 18px;
     }
 
     .metric-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 16px 18px;
-      text-align: left;
+      border-radius: 18px;
+      padding: 14px 10px;
+      text-align: center;
     }
 
     .metric-value {
-      font-size: 30px;
+      font-size: 26px;
       font-weight: 900;
       background: var(--primary-grad);
       -webkit-background-clip: text;
@@ -439,7 +501,7 @@
     }
 
     .metric-desc {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-sec);
       font-weight: 700;
     }
@@ -582,18 +644,45 @@
 
     <!-- TAB 1: ПОДЕЛИТЬСЯ В СТОРИС -->
     <main id="view-share" class="tab-view active">
+      <!-- Theme Switcher -->
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-sec); margin-bottom: 8px; letter-spacing: 0.5px; display: flex; justify-content: space-between;">
+          <span>🎨 СТИЛЬ КАРТОЧКИ:</span>
+          <span id="theme-badge-name" style="color: var(--primary);">⚡ Lum Signature</span>
+        </div>
+        <div class="theme-picker-row">
+          <button class="theme-pill active" onclick="setStoryTheme('lum', this)">⚡ Lum</button>
+          <button class="theme-pill" onclick="setStoryTheme('obsidian', this)">🖤 Stealth</button>
+          <button class="theme-pill" onclick="setStoryTheme('gold', this)">👑 Gold VIP</button>
+          <button class="theme-pill" onclick="setStoryTheme('sakura', this)">🌸 Sakura</button>
+        </div>
+      </div>
+
       <!-- Live 3D Floating Story Preview -->
-      <div class="story-hero-preview">
-        <div class="story-card-inner">
-          <div class="preview-pill">
-            <span>🎲</span> ask me anything
+      <div id="story-preview-card" class="story-hero-preview">
+        <div id="story-inner-card" class="story-card-inner">
+          <div id="story-badge-el" class="preview-pill">
+            <span>⚡</span> ask me anything
           </div>
-          <div class="preview-text">
+          <div id="story-text-el" class="preview-text">
             Напиши мне всё,<br>о чём ты молчишь...
           </div>
           <div class="preview-watermark">
             🤫 100% анонимно • @akilum_anon_bot
           </div>
+        </div>
+      </div>
+
+      <!-- Prompt Switcher -->
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-sec); margin-bottom: 8px; letter-spacing: 0.5px;">
+          💬 ВЫБЕРИ ТЕМУ ДЛЯ СТОРИС:
+        </div>
+        <div class="prompt-chips-row">
+          <button class="prompt-chip active" onclick="setStoryPrompt('Напиши мне всё,\nо чём ты молчишь...', this)">Напиши мне всё...</button>
+          <button class="prompt-chip" onclick="setStoryPrompt('Угадай, кто мне\nсейчас нравится? 🤫', this)">Угадай, кто нравится 🤫</button>
+          <button class="prompt-chip" onclick="setStoryPrompt('Оцени мой вайб\nот 1 до 10 🔥', this)">Оцени мой вайб 🔥</button>
+          <button class="prompt-chip" onclick="setStoryPrompt('Задай самый смелый\nвопрос про нас 👀', this)">Смелый вопрос 👀</button>
         </div>
       </div>
 
@@ -623,11 +712,15 @@
       <div class="metrics-row">
         <div class="metric-card">
           <div class="metric-value" id="metric-questions">0</div>
-          <div class="metric-desc">Вопросов получено</div>
+          <div class="metric-desc">Вопросов</div>
         </div>
         <div class="metric-card">
           <div class="metric-value" id="metric-answers">0</div>
-          <div class="metric-desc">Ответов отправлено</div>
+          <div class="metric-desc">Ответов</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="metric-stars" style="color: #FFD700; background: linear-gradient(135deg, #FFE259 0%, #FFA751 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+          <div class="metric-desc">⭐ Звёзд</div>
         </div>
       </div>
     </main>
@@ -658,6 +751,10 @@
 
       <button class="btn btn-gradient" onclick="submitAnonymousQuestion()">
         🚀 Отправить анонимно
+      </button>
+
+      <button class="btn btn-super" onclick="submitSuperQuestion()">
+        👑 Супер-вопрос с донатом (50 ⭐)
       </button>
 
       <div style="text-align: center; margin-top: 14px; font-size: 12px; color: var(--text-ter); font-weight: 700;">
@@ -750,12 +847,85 @@
       }
     }
 
+    let selectedTheme = 'lum';
+    let selectedPrompt = 'Напиши мне всё,\nо чём ты молчишь...';
+
+    const THEME_STYLES = {
+      lum: {
+        bg: 'linear-gradient(135deg, #00F5D4 0%, #00B894 45%, #FFD600 100%)',
+        cardBg: '#ffffff',
+        text: '#111827',
+        badge: '⚡ ask me anything',
+        name: '⚡ Lum Signature'
+      },
+      obsidian: {
+        bg: 'linear-gradient(135deg, #050608 0%, #141824 50%, #08090d 100%)',
+        cardBg: '#11141c',
+        text: '#ffffff',
+        badge: '🖤 stealth secret',
+        name: '🖤 Obsidian Stealth'
+      },
+      gold: {
+        bg: 'linear-gradient(135deg, #FFE259 0%, #FFA751 50%, #FF5722 100%)',
+        cardBg: '#121118',
+        text: '#ffffff',
+        badge: '👑 VIP Super-Question',
+        name: '👑 Royal Gold VIP'
+      },
+      sakura: {
+        bg: 'linear-gradient(135deg, #FF2A85 0%, #8A2387 50%, #00F0FF 100%)',
+        cardBg: '#ffffff',
+        text: '#111827',
+        badge: '🌸 secret story',
+        name: '🌸 Cyber Sakura'
+      }
+    };
+
+    function setStoryTheme(theme, btn) {
+      triggerHaptic('light');
+      selectedTheme = theme;
+      document.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const conf = THEME_STYLES[theme] || THEME_STYLES.lum;
+      document.getElementById('theme-badge-name').textContent = conf.name;
+      const preview = document.getElementById('story-preview-card');
+      const inner = document.getElementById('story-inner-card');
+      const textEl = document.getElementById('story-text-el');
+      const badgeEl = document.getElementById('story-badge-el');
+
+      preview.style.background = conf.bg;
+      inner.style.background = conf.cardBg;
+      textEl.style.color = conf.text;
+      badgeEl.innerHTML = `<span>${conf.badge.slice(0, 2)}</span> ${conf.badge.slice(2)}`;
+    }
+
+    function setStoryPrompt(prompt, btn) {
+      triggerHaptic('light');
+      selectedPrompt = prompt;
+      document.querySelectorAll('.prompt-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('story-text-el').innerHTML = prompt.replace(/\n/g, '<br>');
+    }
+
     function generateAndSaveStory() {
       triggerHaptic('heavy');
       if (tg) {
         tg.close();
       }
-      window.location.href = `https://t.me/${botTag}?start=story`;
+      window.location.href = `https://t.me/${botTag}?start=story_${selectedTheme}_${encodeURIComponent(selectedPrompt)}`;
+    }
+
+    function submitSuperQuestion() {
+      const text = document.getElementById('ask-textarea').value.trim();
+      if (text.length < 2) {
+        showNotice('⚠️ Напиши вопрос перед отправкой!');
+        triggerHaptic('light');
+        return;
+      }
+      triggerHaptic('heavy');
+      if (tg) tg.close();
+      window.location.href = `https://t.me/${botTag}?start=super_${currentUserId}_${encodeURIComponent(text)}`;
     }
 
     function switchNav(tab, btn) {
@@ -832,6 +1002,7 @@
           if (data.user) {
             document.getElementById('metric-questions').textContent = data.user.questionsReceived || 0;
             document.getElementById('metric-answers').textContent = data.user.repliesSent || 0;
+            document.getElementById('metric-stars').textContent = data.user.starsReceived || 0;
           }
 
           const container = document.getElementById('inbox-container');
@@ -839,9 +1010,11 @@
             container.innerHTML = data.questions.map(q => {
               const d = new Date(q.createdAt);
               const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+              const superBadge = q.isSuper ? `<span style="color: #FFD700; font-weight: 800;">👑 СУПЕР (+${q.stars || 50} ⭐)</span> • ` : '';
+              const reactionBadge = q.reaction ? `<span style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 8px;">${q.reaction}</span> • ` : '';
               return `
-                <div class="inbox-item">
-                  <div class="inbox-time">🕒 ${timeStr} • Анонимный вопрос</div>
+                <div class="inbox-item" style="${q.isSuper ? 'border-color: rgba(255, 215, 0, 0.45); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.15);' : ''}">
+                  <div class="inbox-time">🕒 ${timeStr} • ${superBadge}${reactionBadge}Анонимный вопрос</div>
                   <div class="inbox-text">«${escapeHtml(q.text)}»</div>
                   <div class="inbox-actions">
                     <button class="pill-btn" onclick="openStoryForQ('${q.id}')">📸 В Сторис</button>
@@ -862,7 +1035,7 @@
     function openStoryForQ(qId) {
       triggerHaptic('heavy');
       if (tg) tg.close();
-      window.location.href = `https://t.me/${botTag}?start=card_${qId}`;
+      window.location.href = `https://t.me/${botTag}?start=card_${qId}_${selectedTheme}`;
     }
 
     function answerQ(qId) {
