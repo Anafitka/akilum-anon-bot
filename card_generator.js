@@ -43,11 +43,11 @@ function generateQuestionCard(questionText, recipientName = "", theme = "sunset"
     )
     .join("\n");
 
-  // Цветовые схемы
+  // Цветовые схемы (фирменный стиль Лам: бирюзовый + изумрудный + электрический золотой)
   const isDark = theme === "dark";
   const bgGrad = isDark
-    ? `<stop offset="0%" stop-color="#0a0914"/><stop offset="50%" stop-color="#141126"/><stop offset="100%" stop-color="#0b0a15"/>`
-    : `<stop offset="0%" stop-color="#FF385C"/><stop offset="50%" stop-color="#FF5A36"/><stop offset="100%" stop-color="#FFA033"/>`;
+    ? `<stop offset="0%" stop-color="#07090e"/><stop offset="50%" stop-color="#0d1520"/><stop offset="100%" stop-color="#080c12"/>`
+    : `<stop offset="0%" stop-color="#00F5D4"/><stop offset="45%" stop-color="#00C896"/><stop offset="100%" stop-color="#FFD600"/>`;
 
   const cardBg = isDark ? "#171524" : "#ffffff";
   const cardBorder = isDark ? "#28233d" : "#ffffff";
@@ -130,8 +130,8 @@ function generateQuestionCard(questionText, recipientName = "", theme = "sunset"
 function generatePromoCard(name = "мне", botUsername = "akilum_anon_bot", theme = "sunset") {
   const isDark = theme === "dark";
   const bgGrad = isDark
-    ? `<stop offset="0%" stop-color="#0a0914"/><stop offset="50%" stop-color="#141126"/><stop offset="100%" stop-color="#0b0a15"/>`
-    : `<stop offset="0%" stop-color="#FF385C"/><stop offset="50%" stop-color="#FF5A36"/><stop offset="100%" stop-color="#FFA033"/>`;
+    ? `<stop offset="0%" stop-color="#07090e"/><stop offset="50%" stop-color="#0d1520"/><stop offset="100%" stop-color="#080c12"/>`
+    : `<stop offset="0%" stop-color="#00F5D4"/><stop offset="45%" stop-color="#00C896"/><stop offset="100%" stop-color="#FFD600"/>`;
 
   const cardBg = isDark ? "#171524" : "#ffffff";
   const cardBorder = isDark ? "#28233d" : "#ffffff";

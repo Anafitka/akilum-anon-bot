@@ -10,21 +10,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07070c;
+      --bg: #07090e;
       --surface: rgba(255, 255, 255, 0.05);
       --surface-elevated: rgba(255, 255, 255, 0.08);
       --border: rgba(255, 255, 255, 0.1);
-      --border-glow: rgba(255, 75, 110, 0.4);
-      --primary: #FF3366;
-      --primary-grad: linear-gradient(135deg, #FF3366 0%, #FF6B00 100%);
-      --accent-grad: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%);
+      --border-glow: rgba(0, 245, 212, 0.35);
+      --primary: #00F5D4;
+      --primary-grad: linear-gradient(135deg, #00F5D4 0%, #00C896 50%, #FFD600 100%);
+      --accent-grad: linear-gradient(135deg, #00F5D4 0%, #00E5FF 50%, #FFD600 100%);
       --text: #ffffff;
-      --text-sec: #9aa0b6;
-      --text-ter: #595f75;
+      --text-sec: #9aa8bd;
+      --text-ter: #54657d;
       --radius-xl: 32px;
       --radius-lg: 24px;
       --radius-md: 16px;
-      --shadow-glow: 0 16px 40px -10px rgba(255, 51, 102, 0.35);
+      --shadow-glow: 0 16px 40px -10px rgba(0, 245, 212, 0.35);
     }
 
     * {
@@ -51,7 +51,7 @@
       width: 380px;
       height: 380px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 51, 102, 0.22) 0%, rgba(255, 107, 0, 0.08) 50%, transparent 75%);
+      background: radial-gradient(circle, rgba(0, 245, 212, 0.22) 0%, rgba(0, 200, 150, 0.08) 50%, transparent 75%);
       top: -120px;
       right: -80px;
       pointer-events: none;
@@ -64,7 +64,7 @@
       width: 320px;
       height: 320px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, rgba(112, 0, 255, 0.08) 50%, transparent 75%);
+      background: radial-gradient(circle, rgba(255, 214, 0, 0.14) 0%, rgba(0, 229, 255, 0.08) 50%, transparent 75%);
       bottom: 60px;
       left: -80px;
       pointer-events: none;
@@ -101,7 +101,7 @@
       border-radius: 20px;
       background: var(--primary-grad);
       padding: 2px;
-      box-shadow: 0 8px 24px rgba(255, 51, 102, 0.35);
+      box-shadow: 0 8px 24px rgba(0, 245, 212, 0.35);
       position: relative;
     }
 
@@ -117,19 +117,19 @@
       position: absolute;
       bottom: -4px;
       right: -4px;
-      background: #0f1017;
-      border: 1.5px solid #10ffa0;
+      background: #07090e;
+      border: 1.5px solid #00F5D4;
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      box-shadow: 0 0 10px #10ffa0;
+      box-shadow: 0 0 10px #00F5D4;
     }
 
     .brand-title {
       font-size: 22px;
       font-weight: 900;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 40%, #ffd0db 100%);
+      background: linear-gradient(135deg, #ffffff 40%, #70FFF1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       line-height: 1.2;
@@ -145,9 +145,9 @@
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.5px;
-      color: #10ffa0;
-      background: rgba(16, 255, 160, 0.1);
-      border: 1px solid rgba(16, 255, 160, 0.25);
+      color: #00F5D4;
+      background: rgba(0, 245, 212, 0.1);
+      border: 1px solid rgba(0, 245, 212, 0.25);
       padding: 6px 12px;
       border-radius: 20px;
       display: flex;
@@ -159,8 +159,8 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #10ffa0;
-      box-shadow: 0 0 6px #10ffa0;
+      background: #00F5D4;
+      box-shadow: 0 0 6px #00F5D4;
     }
 
     /* Segmented Control / Tabs Switcher */
@@ -193,9 +193,9 @@
     }
 
     .tab-btn.active {
-      background: #ffffff;
-      color: #0b0a12;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      background: linear-gradient(135deg, #00F5D4 0%, #00D29E 100%);
+      color: #05090e;
+      box-shadow: 0 4px 16px rgba(0, 245, 212, 0.35);
       transform: translateY(-1px);
     }
 
@@ -215,12 +215,12 @@
 
     /* Live 3D Floating Story Preview */
     .story-hero-preview {
-      background: linear-gradient(135deg, #FF3366 0%, #FF6838 50%, #FFA033 100%);
+      background: linear-gradient(135deg, #00F5D4 0%, #00B894 45%, #FFD600 100%);
       border-radius: 28px;
       padding: 30px 22px;
       text-align: center;
       margin-bottom: 20px;
-      box-shadow: 0 20px 50px -10px rgba(255, 51, 102, 0.45);
+      box-shadow: 0 20px 50px -10px rgba(0, 245, 212, 0.4);
       position: relative;
     }
 
@@ -306,9 +306,10 @@
     }
 
     .btn-gradient {
-      background: var(--primary-grad);
-      color: #fff;
-      box-shadow: var(--shadow-glow);
+      background: linear-gradient(135deg, #00F5D4 0%, #00D29E 60%, #FFD600 100%);
+      color: #050a0f;
+      font-weight: 900;
+      box-shadow: 0 16px 36px -10px rgba(0, 245, 212, 0.4);
     }
 
     .btn-secondary {
@@ -504,7 +505,7 @@
       top: 18px;
       left: 50%;
       transform: translateX(-50%) translateY(-90px);
-      background: rgba(20, 19, 32, 0.95);
+      background: rgba(10, 16, 24, 0.95);
       border: 1px solid var(--primary);
       color: #fff;
       padding: 12px 22px;
@@ -600,7 +601,7 @@
       <div class="glass-card" style="padding: 20px;">
         <div style="font-size: 13px; font-weight: 800; color: var(--text-sec); margin-bottom: 10px; display: flex; justify-content: space-between;">
           <span>ТВОЯ ССЫЛКА ДЛЯ СТОРИС</span>
-          <span style="color: #FF3366;">NGL STYLE</span>
+          <span style="color: var(--primary); display: flex; align-items: center; gap: 4px;">⚡ LUM EDITION</span>
         </div>
 
         <div class="link-widget">
