@@ -105,6 +105,48 @@ function getGlobalStats() {
   };
 }
 
+// Привязка message_id к вопросу для мгновенного ответа свайпом
+function linkMessageToQuestion(messageId, chatId, qId, type) {
+  if (!data.messageMap) data.messageMap = {};
+  const key = `${chatId}_${messageId}`;
+  data.messageMap[key] = { qId, type, time: Date.now() };
+  saveDatabase();
+}
+
+function getQuestionByMessage(messageId, chatId) {
+  if (!data.messageMap) return null;
+  const key = `${chatId}_${messageId}`;
+  return data.messageMap[key] || null;
+}
+
+function setLatestQuestion(userId, qId) {
+  if (!data.latestQuestions) data.latestQuestions = {};
+  data.latestQuestions[String(userId)] = { qId, time: Date.now() };
+  saveDatabase();
+}
+
+function getLatestQuestion(userId) {
+  if (!data.latestQuestions) return null;
+  const item = data.latestQuestions[String(userId)];
+  if (!item) return null;
+  if (Date.now() - item.time < 24 * 60 * 60 * 1000) {
+    return data.questions[item.qId] || null;
+  }
+  return null;
+}
+
+function getUserQuestions(userId) {
+  const result = [];
+  const targetIdNum = Number(userId);
+  for (const qId of Object.keys(data.questions || {})) {
+    const q = data.questions[qId];
+    if (q.targetId === targetIdNum) {
+      result.push(q);
+    }
+  }
+  return result.sort((a, b) => b.createdAt - a.createdAt).slice(0, 30);
+}
+
 module.exports = {
   getOrCreateUser,
   getUser,
@@ -112,4 +154,9 @@ module.exports = {
   getQuestion,
   setQuestionReply,
   getGlobalStats,
+  linkMessageToQuestion,
+  getQuestionByMessage,
+  setLatestQuestion,
+  getLatestQuestion,
+  getUserQuestions,
 };

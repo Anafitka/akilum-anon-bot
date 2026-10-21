@@ -6,6 +6,11 @@ const {
   getQuestion,
   setQuestionReply,
   getGlobalStats,
+  linkMessageToQuestion,
+  getQuestionByMessage,
+  setLatestQuestion,
+  getLatestQuestion,
+  getUserQuestions,
 } = require("./db");
 const {
   generateQuestionCard,
@@ -80,15 +85,11 @@ async function initBotProfile() {
     await bot.api.setMyShortDescription(
       "Анонимные вопросы и признания для твоих Stories 🤫"
     );
-    // Кнопка Mini App в нижнем меню
+    // Возвращаем стандартное меню ввода (убираем длинную синюю кнопку, которая мешает писать)
     await bot.api.setChatMenuButton({
-      menu_button: {
-        type: "web_app",
-        text: "⚡ Открыть Akilum",
-        web_app: { url: "https://akilum-anon-bot.onrender.com" }
-      }
+      menu_button: { type: "default" }
     });
-    console.log("✓ Профиль и Mini App кнопка настроены");
+    console.log("✓ Профиль обновлен, синяя кнопка убрана из строки ввода");
   } catch (e) {
     console.warn("Предупреждение профиля:", e.message);
   }
@@ -102,6 +103,51 @@ bot.command("start", async (ctx) => {
   getOrCreateUser(userId, name, username);
 
   const payload = ctx.match ? ctx.match.trim() : "";
+
+  // Если переход из Mini App для создания сторис
+  if (payload.startsWith("card_")) {
+    const qId = payload.replace("card_", "");
+    const q = getQuestion(qId);
+    if (q) {
+      await ctx.api.sendChatAction(ctx.chat.id, "upload_photo");
+      try {
+        const u = getUser(userId) || { name: ctx.from.first_name };
+        const pngBuffer = generateQuestionCard(q.text, u.name);
+        await ctx.replyWithPhoto(new InputFile(pngBuffer, `story_${qId}.png`), {
+          caption: "Готово! Сохрани картинку, выложи в Сторис и напиши свой ответ 🔥",
+        });
+      } catch (err) {
+        console.error("Ошибка создания карточки:", err.message);
+        await ctx.reply("Не удалось создать карточку.");
+      }
+    } else {
+      await ctx.reply("Вопрос не найден.");
+    }
+    return;
+  }
+
+  // Если переход из Mini App для ответа на вопрос
+  if (payload.startsWith("reply_")) {
+    const qId = payload.replace("reply_", "");
+    const q = getQuestion(qId);
+    if (q) {
+      userStates.set(userId, {
+        mode: "reply",
+        qId: qId,
+      });
+      await ctx.reply(
+        `Напиши ответ на вопрос:\n` +
+        `<blockquote>${escapeHtml(q.text)}</blockquote>`,
+        {
+          parse_mode: "HTML",
+          reply_markup: new InlineKeyboard().text("❌ Отмена", "action:cancel"),
+        }
+      );
+    } else {
+      await ctx.reply("Вопрос не найден.");
+    }
+    return;
+  }
 
   // Если переход по ссылке вида /start anon_123456
   if (payload.startsWith("anon_")) {
@@ -231,7 +277,104 @@ bot.on("message:text", async (ctx) => {
   const text = ctx.message.text.trim();
   const state = userStates.get(userId);
 
-  // Режим отправки анонимного вопроса
+  // === 1. НАЙТИ СВАЙП-ОТВЕТ (Telegram Native Swipe To Reply) ===
+  if (ctx.message.reply_to_message) {
+    const replyToMsg = ctx.message.reply_to_message;
+    const linked = getQuestionByMessage(replyToMsg.message_id, ctx.chat.id);
+
+    if (linked) {
+      if (linked.type === "question") {
+        // Получатель свайпнул вопрос и написал ответ
+        const q = getQuestion(linked.qId);
+        if (q) {
+          setQuestionReply(q.id, text);
+          await ctx.reply(`✓ <b>Ответ отправлен анониму!</b> 💌`, { parse_mode: "HTML" });
+
+          const askAgainKb = new InlineKeyboard().text(
+            "💬 Написать ещё",
+            `action:askagain_${q.targetId}`
+          );
+
+          try {
+            const sentAnswer = await bot.api.sendMessage(
+              q.senderId,
+              `💬 <b>Ответ на твой анонимный вопрос:</b>\n\n` +
+              `Вопрос:\n` +
+              `<blockquote>${escapeHtml(q.text)}</blockquote>\n\n` +
+              `Ответ:\n` +
+              `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+              `<i>💡 Свайпни это сообщение вправо, чтобы написать ответное сообщение анонимно!</i>`,
+              { parse_mode: "HTML", reply_markup: askAgainKb }
+            );
+            linkMessageToQuestion(sentAnswer.message_id, q.senderId, q.id, "answer");
+          } catch (e) {
+            console.warn("Не удалось доставить ответ:", e.message);
+          }
+          return;
+        }
+      } else if (linked.type === "answer") {
+        // Автор свайпнул ответ и написал продолжение
+        const q = getQuestion(linked.qId);
+        if (q) {
+          const newQ = saveQuestion(q.targetId, userId, text);
+          await ctx.reply(`✓ <b>Сообщение отправлено анонимно!</b> 💌`, { parse_mode: "HTML" });
+
+          const recipientKb = new InlineKeyboard()
+            .text("📸 Создать сторис", `action:card_${newQ.id}`)
+            .row()
+            .text("💬 Ответить", `action:reply_${newQ.id}`);
+
+          try {
+            const sentMsg = await bot.api.sendMessage(
+              q.targetId,
+              `💌 <b>Продолжение анонимного диалога:</b>\n\n` +
+              `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+              `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
+              { parse_mode: "HTML", reply_markup: recipientKb }
+            );
+            linkMessageToQuestion(sentMsg.message_id, q.targetId, newQ.id, "question");
+            setLatestQuestion(q.targetId, newQ.id);
+          } catch (e) {
+            console.warn("Ошибка доставки продолжения:", e.message);
+          }
+          return;
+        }
+      }
+    }
+
+    // Резервный умный поиск: если свайпнули любое сообщение бота
+    if (replyToMsg.from?.is_bot) {
+      const latestQ = getLatestQuestion(userId);
+      if (latestQ && (Date.now() - latestQ.createdAt < 24 * 60 * 60 * 1000) && latestQ.targetId === userId) {
+        setQuestionReply(latestQ.id, text);
+        await ctx.reply(`✓ <b>Ответ отправлен анониму!</b> 💌`, { parse_mode: "HTML" });
+
+        const askAgainKb = new InlineKeyboard().text(
+          "💬 Написать ещё",
+          `action:askagain_${latestQ.targetId}`
+        );
+
+        try {
+          const sentAnswer = await bot.api.sendMessage(
+            latestQ.senderId,
+            `💬 <b>Ответ на твой анонимный вопрос:</b>\n\n` +
+            `Вопрос:\n` +
+            `<blockquote>${escapeHtml(latestQ.text)}</blockquote>\n\n` +
+            `Ответ:\n` +
+            `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+            `<i>💡 Свайпни это сообщение вправо, чтобы ответить ещё!</i>`,
+            { parse_mode: "HTML", reply_markup: askAgainKb }
+          );
+          linkMessageToQuestion(sentAnswer.message_id, latestQ.senderId, latestQ.id, "answer");
+        } catch (e) {
+          console.warn("Не удалось доставить ответ:", e.message);
+        }
+        return;
+      }
+    }
+  }
+
+  // Режим отправки анонимного вопроса (по кнопке или ссылке)
   if (state && state.mode === "ask") {
     const lastTime = lastMsgTimes.get(userId) || 0;
     if (Date.now() - lastTime < 2000) {
@@ -267,19 +410,22 @@ bot.on("message:text", async (ctx) => {
       .text("💬 Ответить", `action:reply_${q.id}`);
 
     try {
-      await bot.api.sendMessage(
+      const sentMsg = await bot.api.sendMessage(
         state.targetId,
         `💌 <b>Новый анонимный вопрос:</b>\n\n` +
-        `<blockquote>${escapeHtml(text)}</blockquote>`,
+        `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+        `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
         { parse_mode: "HTML", reply_markup: recipientKb }
       );
+      linkMessageToQuestion(sentMsg.message_id, state.targetId, q.id, "question");
+      setLatestQuestion(state.targetId, q.id);
     } catch (sendErr) {
       console.warn("Не удалось доставить вопрос:", sendErr.message);
     }
     return;
   }
 
-  // Режим ответа анониму
+  // Режим ответа анониму (по кнопке)
   if (state && state.mode === "reply") {
     const q = getQuestion(state.qId);
     userStates.delete(userId);
@@ -299,22 +445,24 @@ bot.on("message:text", async (ctx) => {
     );
 
     try {
-      await bot.api.sendMessage(
+      const sentAnswer = await bot.api.sendMessage(
         q.senderId,
         `💬 <b>Ответ на твой анонимный вопрос:</b>\n\n` +
         `Вопрос:\n` +
         `<blockquote>${escapeHtml(q.text)}</blockquote>\n\n` +
         `Ответ:\n` +
-        `<blockquote>${escapeHtml(text)}</blockquote>`,
+        `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+        `<i>💡 Свайпни это сообщение вправо, чтобы ответить ещё!</i>`,
         { parse_mode: "HTML", reply_markup: askAgainKb }
       );
+      linkMessageToQuestion(sentAnswer.message_id, q.senderId, q.id, "answer");
     } catch (e) {
       console.warn("Не удалось доставить ответ:", e.message);
     }
     return;
   }
 
-  // Если написали текст просто так
+  // Если написали текст просто так (из поиска)
   if (userId !== OWNER_ID) {
     const q = saveQuestion(OWNER_ID, userId, text);
     await ctx.reply(
@@ -335,12 +483,15 @@ bot.on("message:text", async (ctx) => {
       .text("💬 Ответить", `action:reply_${q.id}`);
 
     try {
-      await bot.api.sendMessage(
+      const sentMsg = await bot.api.sendMessage(
         OWNER_ID,
         `💌 <b>Новый анонимный вопрос из поиска Telegram:</b>\n\n` +
-        `<blockquote>${escapeHtml(text)}</blockquote>`,
+        `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+        `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
         { parse_mode: "HTML", reply_markup: recipientKb }
       );
+      linkMessageToQuestion(sentMsg.message_id, OWNER_ID, q.id, "question");
+      setLatestQuestion(OWNER_ID, q.id);
     } catch (e) {
       console.warn("Ошибка доставки владельцу:", e.message);
     }
@@ -454,12 +605,15 @@ bot.callbackQuery(/^action:(.+)$/, async (ctx) => {
       .text("💬 Ответить", `action:reply_${q.id}`);
 
     try {
-      await bot.api.sendMessage(
+      const sentMsg = await bot.api.sendMessage(
         targetId,
         `💌 <b>Новый анонимный вопрос:</b>\n\n` +
-        `<blockquote>${escapeHtml(text)}</blockquote>`,
+        `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+        `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
         { parse_mode: "HTML", reply_markup: recipientKb }
       );
+      linkMessageToQuestion(sentMsg.message_id, targetId, q.id, "question");
+      setLatestQuestion(targetId, q.id);
     } catch (e) {
       console.warn("Ошибка доставки:", e.message);
     }
@@ -586,12 +740,13 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  // 2. API: получить пользователя
+  // 2. API: получить пользователя и вопросы
   if (url.pathname === "/api/user") {
     const qUserId = Number(url.searchParams.get("id"));
     const u = getUser(qUserId);
+    const questions = getUserQuestions(qUserId);
     res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ ok: true, user: u }));
+    return res.end(JSON.stringify({ ok: true, user: u, questions }));
   }
 
   // 3. API: отправить вопрос из веб-приложения
@@ -612,11 +767,19 @@ const server = http.createServer((req, res) => {
             .row()
             .text("💬 Ответить", `action:reply_${q.id}`);
 
-          await bot.api.sendMessage(
-            targetId,
-            `💌 <b>Новый анонимный вопрос из Mini App:</b>\n\n<blockquote>${escapeHtml(text)}</blockquote>`,
-            { parse_mode: "HTML", reply_markup: recipientKb }
-          );
+          try {
+            const sentMsg = await bot.api.sendMessage(
+              targetId,
+              `💌 <b>Новый анонимный вопрос из Mini App:</b>\n\n` +
+              `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
+              `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
+              { parse_mode: "HTML", reply_markup: recipientKb }
+            );
+            linkMessageToQuestion(sentMsg.message_id, targetId, q.id, "question");
+            setLatestQuestion(targetId, q.id);
+          } catch (e) {
+            console.warn("API send message error:", e.message);
+          }
 
           res.writeHead(200, { "Content-Type": "application/json" });
           return res.end(JSON.stringify({ ok: true, questionId: q.id }));

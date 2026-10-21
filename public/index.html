@@ -2,22 +2,29 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AKILUM • Анонимные вопросы</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AKILUM • Anonymous Secrets</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b0a12;
-      --card-bg: rgba(255, 255, 255, 0.06);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --primary: #FF385C;
-      --primary-grad: linear-gradient(135deg, #FF385C 0%, #FF6B00 100%);
+      --bg: #07070c;
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-elevated: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(255, 75, 110, 0.4);
+      --primary: #FF3366;
+      --primary-grad: linear-gradient(135deg, #FF3366 0%, #FF6B00 100%);
+      --accent-grad: linear-gradient(135deg, #00F0FF 0%, #7000FF 100%);
       --text: #ffffff;
-      --text-muted: #9499ab;
-      --radius: 24px;
+      --text-sec: #9aa0b6;
+      --text-ter: #595f75;
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --shadow-glow: 0 16px 40px -10px rgba(255, 51, 102, 0.35);
     }
 
     * {
@@ -25,6 +32,7 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     body {
@@ -33,148 +41,253 @@
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
-      padding-bottom: 90px;
+      padding-bottom: 96px;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Ambient background glow */
-    .glow-orb {
+    /* Ambient background gradient spheres */
+    .ambient-sphere-1 {
+      position: fixed;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 51, 102, 0.22) 0%, rgba(255, 107, 0, 0.08) 50%, transparent 75%);
+      top: -120px;
+      right: -80px;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(40px);
+    }
+
+    .ambient-sphere-2 {
       position: fixed;
       width: 320px;
       height: 320px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 56, 92, 0.18) 0%, rgba(255, 107, 0, 0.08) 50%, transparent 70%);
-      top: -60px;
-      right: -60px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.12) 0%, rgba(112, 0, 255, 0.08) 50%, transparent 75%);
+      bottom: 60px;
+      left: -80px;
       pointer-events: none;
       z-index: 0;
+      filter: blur(40px);
     }
 
-    .container {
+    .app-wrapper {
       position: relative;
       z-index: 1;
       max-width: 480px;
       margin: 0 auto;
-      padding: 18px 20px;
+      padding: 16px 20px;
     }
 
     /* Header */
-    .header {
+    .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
+      padding: 4px 0;
     }
 
-    .brand {
+    .mascot-profile {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .avatar-badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
+    .mascot-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 20px;
       background: var(--primary-grad);
       padding: 2px;
-      box-shadow: 0 4px 16px rgba(255, 56, 92, 0.3);
+      box-shadow: 0 8px 24px rgba(255, 51, 102, 0.35);
+      position: relative;
     }
 
-    .avatar-badge img {
+    .mascot-avatar img {
       width: 100%;
       height: 100%;
-      border-radius: 50%;
+      border-radius: 18px;
       object-fit: cover;
       display: block;
     }
 
-    .brand-text h1 {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      background: linear-gradient(135deg, #fff 40%, #ffc0cb 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .live-status-pill {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      background: #0f1017;
+      border: 1.5px solid #10ffa0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10ffa0;
     }
 
-    .brand-text p {
+    .brand-title {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 40%, #ffd0db 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--text-sec);
       font-weight: 600;
     }
 
-    .status-tag {
+    .mode-pill {
       font-size: 11px;
       font-weight: 800;
+      letter-spacing: 0.5px;
       color: #10ffa0;
-      background: rgba(16, 255, 160, 0.12);
+      background: rgba(16, 255, 160, 0.1);
       border: 1px solid rgba(16, 255, 160, 0.25);
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: 20px;
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .status-dot {
+    .mode-pill-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: #10ffa0;
-      box-shadow: 0 0 8px #10ffa0;
+      box-shadow: 0 0 6px #10ffa0;
     }
 
-    /* Card styling */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 22px;
+    /* Segmented Control / Tabs Switcher */
+    .nav-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px;
+      margin-bottom: 22px;
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      margin-bottom: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
-    .card-title {
-      font-size: 15px;
+    .tab-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: var(--text-sec);
+      font-family: inherit;
+      font-size: 13px;
       font-weight: 800;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: #0b0a12;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      margin-bottom: 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Live 3D Floating Story Preview */
+    .story-hero-preview {
+      background: linear-gradient(135deg, #FF3366 0%, #FF6838 50%, #FFA033 100%);
+      border-radius: 28px;
+      padding: 30px 22px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 20px 50px -10px rgba(255, 51, 102, 0.45);
+      position: relative;
+    }
+
+    .story-card-inner {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 28px 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+    }
+
+    .preview-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3f4f6;
+      color: #4b5563;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .preview-text {
+      font-size: 20px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.35;
+      margin-bottom: 18px;
+      word-break: break-word;
+    }
+
+    .preview-watermark {
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* Link Widget */
+    .link-widget {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
-    /* Link share box */
-    .link-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 16px;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-    }
-
-    .link-text {
-      flex: 1;
+    .link-value {
       font-size: 13px;
+      font-weight: 700;
       color: #fff;
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      font-weight: 600;
+      white-space: nowrap;
     }
 
-    /* Action buttons */
+    /* Buttons */
     .btn {
       width: 100%;
-      padding: 15px 20px;
-      border-radius: 16px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      font-family: inherit;
       font-size: 15px;
       font-weight: 800;
       border: none;
@@ -183,99 +296,96 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      transition: transform 0.15s ease, opacity 0.15s ease;
+      transition: all 0.18s ease;
+      letter-spacing: -0.01em;
     }
 
     .btn:active {
       transform: scale(0.97);
+      opacity: 0.9;
     }
 
-    .btn-primary {
+    .btn-gradient {
       background: var(--primary-grad);
       color: #fff;
-      box-shadow: 0 8px 24px rgba(255, 56, 92, 0.35);
+      box-shadow: var(--shadow-glow);
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--surface-elevated);
       color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--border);
       margin-top: 10px;
     }
 
-    .btn-small {
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
       padding: 8px 14px;
+      border-radius: 12px;
       font-size: 12px;
-      border-radius: 10px;
+      font-weight: 800;
       width: auto;
+      flex-shrink: 0;
     }
 
-    /* Input Card for Asking Questions */
-    .question-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      border-radius: 28px;
+    /* Textarea question input */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
       padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
       position: relative;
-      overflow: hidden;
     }
 
-    .question-card::before {
+    .input-card::before {
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
+      left: 24px;
+      right: 24px;
+      height: 2px;
       background: var(--primary-grad);
+      border-radius: 2px;
     }
 
-    .pill-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #ffc0cb;
-      margin-bottom: 14px;
-    }
-
-    .textarea-box {
+    .textarea-field {
       width: 100%;
-      min-height: 120px;
+      min-height: 130px;
       background: transparent;
       border: none;
       outline: none;
       color: #fff;
+      font-family: inherit;
       font-size: 18px;
       font-weight: 700;
-      font-family: inherit;
-      resize: none;
       line-height: 1.4;
+      resize: none;
+      user-select: text;
     }
 
-    .textarea-box::placeholder {
-      color: rgba(255, 255, 255, 0.35);
+    .textarea-field::placeholder {
+      color: var(--text-ter);
       font-weight: 600;
     }
 
-    .card-footer {
+    .input-bottom-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 14px;
+      margin-top: 16px;
       padding-top: 14px;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .dice-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+    .dice-action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       color: #fff;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 8px 14px;
       font-size: 13px;
       font-weight: 800;
@@ -283,269 +393,291 @@
       align-items: center;
       gap: 6px;
       cursor: pointer;
+      transition: transform 0.2s ease;
     }
 
-    .dice-btn:active {
+    .dice-action-btn:active {
       transform: scale(0.92);
     }
 
-    .char-count {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 600;
+    .dice-icon {
+      font-size: 16px;
+      display: inline-block;
+      transition: transform 0.35s ease;
     }
 
-    /* Stats Grid */
-    .stats-grid {
+    .char-limit {
+      font-size: 12px;
+      color: var(--text-ter);
+      font-weight: 700;
+    }
+
+    /* Stats Row */
+    .metrics-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       margin-bottom: 18px;
     }
 
-    .stat-box {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 16px;
-      text-align: center;
+      padding: 16px 18px;
+      text-align: left;
     }
 
-    .stat-number {
-      font-size: 28px;
+    .metric-value {
+      font-size: 30px;
       font-weight: 900;
       background: var(--primary-grad);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
-    .stat-label {
+    .metric-desc {
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--text-sec);
       font-weight: 700;
     }
 
-    /* Bottom Navigation */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(13, 12, 21, 0.85);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0 20px;
-      z-index: 100;
-    }
-
-    .nav-item {
+    /* Inbox items */
+    .inbox-list {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: var(--text-muted);
+      gap: 12px;
+    }
+
+    .inbox-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .inbox-time {
       font-size: 11px;
+      color: var(--text-ter);
       font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .inbox-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .inbox-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pill-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
       cursor: pointer;
-      background: none;
-      border: none;
-      padding: 6px 16px;
-      transition: color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
-    .nav-item.active {
-      color: #FF385C;
+    .pill-btn:active {
+      background: rgba(255, 255, 255, 0.15);
     }
 
-    .nav-icon {
-      font-size: 20px;
-    }
-
-    /* Toast Notification */
-    .toast {
+    /* Toast */
+    .toast-pill {
       position: fixed;
-      top: 20px;
+      top: 18px;
       left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: #1e1b2e;
+      transform: translateX(-50%) translateY(-90px);
+      background: rgba(20, 19, 32, 0.95);
       border: 1px solid var(--primary);
       color: #fff;
-      padding: 12px 24px;
+      padding: 12px 22px;
       border-radius: 30px;
-      font-size: 14px;
-      font-weight: 700;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-      z-index: 999;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .toast.show {
+    .toast-pill.active {
       transform: translateX(-50%) translateY(0);
     }
 
-    /* Tab views */
-    .tab-content {
+    .tab-view {
       display: none;
     }
 
-    .tab-content.active {
+    .tab-view.active {
       display: block;
-      animation: fadeIn 0.2s ease;
+      animation: tabFadeIn 0.22s ease-out;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-  <div class="glow-orb"></div>
+  <div class="ambient-sphere-1"></div>
+  <div class="ambient-sphere-2"></div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast">
-    <span>✓ Ссылка скопирована!</span>
+  <!-- Toast Notification -->
+  <div id="toast" class="toast-pill">
+    <span id="toast-msg">✓ Готово!</span>
   </div>
 
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <div class="brand">
-        <div class="avatar-badge">
+  <div class="app-wrapper">
+    <!-- Top Header -->
+    <header class="top-bar">
+      <div class="mascot-profile">
+        <div class="mascot-avatar">
           <img src="/avatar.png" alt="Lum Mascot">
+          <div class="live-status-pill"></div>
         </div>
-        <div class="brand-text">
-          <h1>AKILUM</h1>
-          <p id="user-greeting">Анонимные вопросы</p>
+        <div>
+          <div class="brand-title">AKILUM</div>
+          <div class="brand-sub" id="greeting-name">Анонимные вопросы</div>
         </div>
       </div>
-      <div class="status-tag">
-        <div class="status-dot"></div>
+      <div class="mode-pill">
+        <div class="mode-pill-dot"></div>
         100% АНОНИМНО
       </div>
     </header>
 
-    <!-- TAB 1: МОЯ ССЫЛКА -->
-    <section id="tab-home" class="tab-content active">
-      <!-- Stats -->
-      <div class="stats-grid">
-        <div class="stat-box">
-          <div class="stat-number" id="stat-received">0</div>
-          <div class="stat-label">Вопросов получено</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-number" id="stat-replied">0</div>
-          <div class="stat-label">Ответов отправлено</div>
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchNav('share', this)">
+        <span>📲</span> Поделиться
+      </button>
+      <button class="tab-btn" onclick="switchNav('ask', this)">
+        <span>✍️</span> Написать
+      </button>
+      <button class="tab-btn" onclick="switchNav('inbox', this)">
+        <span>💌</span> Входящие
+      </button>
+    </nav>
+
+    <!-- TAB 1: ПОДЕЛИТЬСЯ В СТОРИС -->
+    <main id="view-share" class="tab-view active">
+      <!-- Live 3D Floating Story Preview -->
+      <div class="story-hero-preview">
+        <div class="story-card-inner">
+          <div class="preview-pill">
+            <span>🎲</span> ask me anything
+          </div>
+          <div class="preview-text">
+            Напиши мне всё,<br>о чём ты молчишь...
+          </div>
+          <div class="preview-watermark">
+            🤫 100% анонимно • @akilum_anon_bot
+          </div>
         </div>
       </div>
 
-      <!-- Main Link Box -->
-      <div class="card">
-        <div class="card-title">
-          <span>Твоя ссылка для Сторис</span>
-          <span style="color: #FF385C;">🤫 NGL</span>
+      <!-- Link Box -->
+      <div class="glass-card" style="padding: 20px;">
+        <div style="font-size: 13px; font-weight: 800; color: var(--text-sec); margin-bottom: 10px; display: flex; justify-content: space-between;">
+          <span>ТВОЯ ССЫЛКА ДЛЯ СТОРИС</span>
+          <span style="color: #FF3366;">NGL STYLE</span>
         </div>
-        
-        <div class="link-box">
+
+        <div class="link-widget">
           <span style="font-size: 16px;">🔗</span>
-          <span class="link-text" id="my-link-display">Загрузка ссылки...</span>
-          <button class="btn btn-primary btn-small" onclick="copyMyLink()">Копия</button>
+          <span class="link-value" id="user-link-text">t.me/akilum_anon_bot?start=anon_...</span>
+          <button class="btn btn-copy" onclick="copyShareLink()">Копия</button>
         </div>
 
-        <button class="btn btn-primary" onclick="shareToStories()">
-          📲 Поделиться ссылкой
+        <button class="btn btn-gradient" onclick="openShareTelegram()">
+          📲 Опубликовать в Сторис
         </button>
-        <button class="btn btn-secondary" onclick="openStoryCard()">
-          📸 Создать карточку для Сторис (1080×1920)
+
+        <button class="btn btn-secondary" onclick="generateAndSaveStory()">
+          📸 Создать Сторис-карточку (1080×1920)
         </button>
       </div>
 
-      <!-- Quick Tips -->
-      <div class="card" style="padding: 18px;">
-        <div class="card-title" style="margin-bottom: 8px;">
-          <span>💡 Как собирать больше признаний</span>
+      <!-- Quick Metrics -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-value" id="metric-questions">0</div>
+          <div class="metric-desc">Вопросов получено</div>
         </div>
-        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
-          Выложи карточку в <b>Instagram Stories</b> или <b>Telegram Stories</b> и прикрепи стикер со своей ссылкой. Ответы придут прямо сюда в бот!
-        </p>
+        <div class="metric-card">
+          <div class="metric-value" id="metric-answers">0</div>
+          <div class="metric-desc">Ответов отправлено</div>
+        </div>
       </div>
-    </section>
+    </main>
 
-    <!-- TAB 2: НАПИСАТЬ ВОПРОС -->
-    <section id="tab-ask" class="tab-content">
-      <div class="card-title" style="margin-bottom: 12px;">
-        <span>Секретное сообщение</span>
-        <span style="color: #10ffa0;">🔒 Инкогнито</span>
-      </div>
-
-      <div class="question-card">
-        <div class="pill-badge">
-          <span>🎲</span>
-          <span id="target-label">Вопрос для тебя</span>
+    <!-- TAB 2: НАПИСАТЬ АНОНИМНЫЙ ВОПРОС -->
+    <main id="view-ask" class="tab-view">
+      <div class="input-card">
+        <div class="preview-pill" style="margin-bottom: 14px;">
+          <span>🔒</span> Твоё имя и контакт скрыты
         </div>
 
         <textarea 
-          id="question-input" 
-          class="textarea-box" 
-          placeholder="Напиши всё, о чём молчишь... Я никогда не узнаю, кто ты."
+          id="ask-textarea" 
+          class="textarea-field" 
+          placeholder="Напиши сюда секрет, честный вопрос или комплимент... Получатель никогда не узнает, кто это!"
           maxlength="800"
-          oninput="updateCount()"
+          oninput="handleCharCount()"
         ></textarea>
 
-        <div class="card-footer">
-          <button class="dice-btn" onclick="rollDice()">
-            <span>🎲</span> Случайный вопрос
+        <div class="input-bottom-bar">
+          <button class="dice-action-btn" onclick="spinDice()">
+            <span class="dice-icon" id="dice-spin">🎲</span>
+            <span>Случайный вопрос</span>
           </button>
-          <div class="char-count" id="char-counter">0 / 800</div>
+          <span class="char-limit" id="char-label">0 / 800</span>
         </div>
       </div>
 
-      <button class="btn btn-primary" style="margin-top: 16px;" onclick="sendQuestion()">
+      <button class="btn btn-gradient" onclick="submitAnonymousQuestion()">
         🚀 Отправить анонимно
       </button>
-    </section>
 
-    <!-- TAB 3: О СЕРВИСЕ -->
-    <section id="tab-about" class="tab-content">
-      <div class="card" style="text-align: center; padding: 32px 20px;">
-        <div class="avatar-badge" style="width: 72px; height: 72px; margin: 0 auto 16px;">
-          <img src="/avatar.png" alt="Lum Mascot">
-        </div>
-        <h2 style="font-size: 22px; font-weight: 900; margin-bottom: 6px;">AKILUM</h2>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-          Сервис анонимных вопросов нового поколения с маскотом Лам из Urusei Yatsura.
-        </p>
-        <div style="text-align: left; background: rgba(0,0,0,0.25); border-radius: 16px; padding: 16px; font-size: 13px; line-height: 1.6; color: #d1d5db;">
-          • <b>100% анонимность:</b> твои контакты и имя надёжно зашифрованы.<br>
-          • <b>Рендеринг 9:16:</b> студийные карточки высокого разрешения для Сторис.<br>
-          • <b>Двусторонний диалог:</b> отвечай анонимам прямо через бота.
+      <div style="text-align: center; margin-top: 14px; font-size: 12px; color: var(--text-ter); font-weight: 700;">
+        ⚡ Вопрос придёт получателю прямо в Telegram
+      </div>
+    </main>
+
+    <!-- TAB 3: ВХОДЯЩИЕ ВОПРОСЫ -->
+    <main id="view-inbox" class="tab-view">
+      <div style="font-size: 14px; font-weight: 800; color: var(--text-sec); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <span>ПОЛУЧЕННЫЕ ВОПРОСЫ</span>
+        <button onclick="loadInbox()" style="background: none; border: none; color: var(--primary); font-size: 13px; font-weight: 800; cursor: pointer;">Обновить 🔄</button>
+      </div>
+
+      <div class="inbox-list" id="inbox-container">
+        <div class="inbox-item" style="text-align: center; color: var(--text-ter); padding: 32px 20px;">
+          Пока вопросов нет. Прикрепи свою ссылку в Сторис, чтобы начать получать секреты!
         </div>
       </div>
-    </section>
+    </main>
   </div>
-
-  <!-- Bottom Navigation Bar -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('home', this)">
-      <span class="nav-icon">🔗</span>
-      <span>Моя ссылка</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('ask', this)">
-      <span class="nav-icon">✍️</span>
-      <span>Задать вопрос</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('about', this)">
-      <span class="nav-icon">ℹ️</span>
-      <span>О сервисе</span>
-    </button>
-  </nav>
 
   <script>
     const tg = window.Telegram?.WebApp;
@@ -553,141 +685,193 @@
       tg.ready();
       tg.expand();
       try {
-        tg.setHeaderColor('#0b0a12');
-        tg.setBackgroundColor('#0b0a12');
+        tg.setHeaderColor('#07070c');
+        tg.setBackgroundColor('#07070c');
       } catch (e) {}
     }
 
-    const RANDOM_QUESTIONS = [
+    const SPICY_QUESTIONS = [
       "В кого ты тайно влюблен(а) прямо сейчас? 👀",
       "Твой самый кринжовый момент в жизни? 💀",
       "Что обо мне думают твои друзья? 🤫",
-      "Если бы мы пошли гулять, куда бы позвал(а)? ✨",
+      "Если бы мы пошли гулять, куда бы ты позвал(а)? ✨",
       "Оцени меня от 1 до 10 честно 🔥",
       "Какой твой самый главный секрет? 🤐",
       "Честно: я тебе нравлюсь? 😉",
       "Какой самый безумный поступок ты делал(а)? 🚀",
       "Ты веришь в любовь с первого взгляда? 💔",
-      "Какая твоя самая странная привычка? 😂"
+      "Какая твоя самая странная привычка? 😂",
+      "С кем бы ты хотел(а) застрять в лифте? 🙈"
     ];
 
-    const user = tg?.initDataUnsafe?.user || { id: 8513097259, first_name: "Пользователь" };
-    const botUsername = "akilum_anon_bot";
-    const myLink = `https://t.me/${botUsername}?start=anon_${user.id}`;
+    const currentUserId = tg?.initDataUnsafe?.user?.id || 8513097259;
+    const userName = tg?.initDataUnsafe?.user?.first_name || "Пользователь";
+    const botTag = "akilum_anon_bot";
+    const personalUrl = `https://t.me/${botTag}?start=anon_${currentUserId}`;
 
-    // Инициализация данных
-    document.getElementById('my-link-display').textContent = myLink;
-    if (user.first_name) {
-      document.getElementById('user-greeting').textContent = `Привет, ${user.first_name}!`;
+    // Init
+    document.getElementById('user-link-text').textContent = personalUrl;
+    if (userName) {
+      document.getElementById('greeting-name').textContent = `Привет, ${userName}!`;
     }
 
-    // Загрузка статистики
-    fetch(`/api/user?id=${user.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.user) {
-          document.getElementById('stat-received').textContent = data.user.questionsReceived || 0;
-          document.getElementById('stat-replied').textContent = data.user.repliesSent || 0;
-        }
-      })
-      .catch(() => {});
-
-    function haptic() {
+    function triggerHaptic(type = 'medium') {
       try {
-        tg?.HapticFeedback?.impactOccurred('medium');
+        if (type === 'light') tg?.HapticFeedback?.impactOccurred('light');
+        else if (type === 'heavy') tg?.HapticFeedback?.impactOccurred('heavy');
+        else if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
+        else tg?.HapticFeedback?.impactOccurred('medium');
       } catch (e) {}
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.querySelector('span').textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2500);
+    function showNotice(text) {
+      const el = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = text;
+      el.classList.add('active');
+      setTimeout(() => el.classList.remove('active'), 2400);
     }
 
-    function copyMyLink() {
-      haptic();
-      navigator.clipboard.writeText(myLink).then(() => {
-        showToast('✓ Ссылка скопирована в буфер!');
+    function copyShareLink() {
+      triggerHaptic('success');
+      navigator.clipboard.writeText(personalUrl).then(() => {
+        showNotice('✓ Ссылка скопирована в буфер!');
       });
     }
 
-    function shareToStories() {
-      haptic();
-      const text = encodeURIComponent("Задай мне вопрос анонимно 🤫");
-      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(myLink)}&text=${text}`;
+    function openShareTelegram() {
+      triggerHaptic('medium');
+      const caption = encodeURIComponent("Задай мне вопрос анонимно 🤫");
+      const url = `https://t.me/share/url?url=${encodeURIComponent(personalUrl)}&text=${caption}`;
       if (tg) {
-        tg.openTelegramLink(shareUrl);
+        tg.openTelegramLink(url);
       } else {
-        window.open(shareUrl, '_blank');
+        window.open(url, '_blank');
       }
     }
 
-    function openStoryCard() {
-      haptic();
+    function generateAndSaveStory() {
+      triggerHaptic('heavy');
       if (tg) {
         tg.close();
       }
-      window.location.href = `https://t.me/${botUsername}?start=story`;
+      window.location.href = `https://t.me/${botTag}?start=story`;
     }
 
-    function switchTab(tabId, el) {
-      haptic();
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    function switchNav(tab, btn) {
+      triggerHaptic('light');
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-      el.classList.add('active');
+      document.getElementById(`view-${tab}`).classList.add('active');
+      btn.classList.add('active');
+
+      if (tab === 'inbox') {
+        loadInbox();
+      }
     }
 
-    function rollDice() {
-      haptic();
-      const input = document.getElementById('question-input');
-      const randomQ = RANDOM_QUESTIONS[Math.floor(Math.random() * RANDOM_QUESTIONS.length)];
-      input.value = randomQ;
-      updateCount();
+    function spinDice() {
+      triggerHaptic('heavy');
+      const dice = document.getElementById('dice-spin');
+      dice.style.transform = 'rotate(360deg)';
+      setTimeout(() => dice.style.transform = 'rotate(0deg)', 350);
+
+      const q = SPICY_QUESTIONS[Math.floor(Math.random() * SPICY_QUESTIONS.length)];
+      const area = document.getElementById('ask-textarea');
+      area.value = q;
+      handleCharCount();
     }
 
-    function updateCount() {
-      const len = document.getElementById('question-input').value.length;
-      document.getElementById('char-counter').textContent = `${len} / 800`;
+    function handleCharCount() {
+      const len = document.getElementById('ask-textarea').value.length;
+      document.getElementById('char-label').textContent = `${len} / 800`;
     }
 
-    async function sendQuestion() {
-      const input = document.getElementById('question-input');
-      const text = input.value.trim();
+    async function submitAnonymousQuestion() {
+      const text = document.getElementById('ask-textarea').value.trim();
       if (text.length < 2) {
-        showToast('⚠️ Напиши хотя бы пару слов!');
+        showNotice('⚠️ Напиши хотя бы пару слов!');
+        triggerHaptic('light');
         return;
       }
 
-      haptic();
-      showToast('🚀 Отправляю...');
+      triggerHaptic('heavy');
+      showNotice('🚀 Отправка...');
 
       try {
         const res = await fetch('/api/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            senderId: user.id,
-            targetId: user.id, // По умолчанию себе или автору
+            senderId: currentUserId,
+            targetId: currentUserId,
             text: text
           })
         });
 
         const data = await res.json();
         if (data.ok) {
-          input.value = '';
-          updateCount();
-          showToast('✓ Вопрос успешно отправлен!');
-          try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {}
+          document.getElementById('ask-textarea').value = '';
+          handleCharCount();
+          showNotice('✓ Вопрос доставлен анонимно!');
+          triggerHaptic('success');
         } else {
-          showToast('Ошибка при отправке');
+          showNotice('Ошибка отправки');
         }
       } catch (err) {
-        showToast('✓ Вопрос отправлен анонимно!');
+        showNotice('✓ Вопрос доставлен анонимно!');
       }
     }
+
+    // Загрузка статистики и входящих
+    function loadInbox() {
+      fetch(`/api/user?id=${currentUserId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.user) {
+            document.getElementById('metric-questions').textContent = data.user.questionsReceived || 0;
+            document.getElementById('metric-answers').textContent = data.user.repliesSent || 0;
+          }
+
+          const container = document.getElementById('inbox-container');
+          if (data.questions && data.questions.length > 0) {
+            container.innerHTML = data.questions.map(q => {
+              const d = new Date(q.createdAt);
+              const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+              return `
+                <div class="inbox-item">
+                  <div class="inbox-time">🕒 ${timeStr} • Анонимный вопрос</div>
+                  <div class="inbox-text">«${escapeHtml(q.text)}»</div>
+                  <div class="inbox-actions">
+                    <button class="pill-btn" onclick="openStoryForQ('${q.id}')">📸 В Сторис</button>
+                    <button class="pill-btn" onclick="answerQ('${q.id}')">💬 Ответить</button>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        })
+        .catch(() => {});
+    }
+
+    function escapeHtml(t) {
+      return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function openStoryForQ(qId) {
+      triggerHaptic('heavy');
+      if (tg) tg.close();
+      window.location.href = `https://t.me/${botTag}?start=card_${qId}`;
+    }
+
+    function answerQ(qId) {
+      triggerHaptic('medium');
+      if (tg) tg.close();
+      window.location.href = `https://t.me/${botTag}?start=reply_${qId}`;
+    }
+
+    // Auto-load on open
+    loadInbox();
   </script>
 </body>
 </html>
