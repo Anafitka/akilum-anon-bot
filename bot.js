@@ -87,9 +87,10 @@ const RANDOM_QUESTIONS = [
 async function initBotProfile() {
   try {
     await bot.api.setMyCommands([
-      { command: "start", description: "Моя ссылка" },
+      { command: "app", description: "⚡ Открыть Mini App" },
+      { command: "start", description: "Моя ссылка и кабинет" },
       { command: "story", description: "Картинка для Сторис" },
-      { command: "stats", description: "Статистика" },
+      { command: "stats", description: "Статистика и Звёзды ⭐" },
     ]);
     await bot.api.setMyDescription(
       "AKILUM — анонимные вопросы для Instagram и Telegram Stories.\n\n" +
@@ -98,11 +99,15 @@ async function initBotProfile() {
     await bot.api.setMyShortDescription(
       "Анонимные вопросы и признания для твоих Stories 🤫"
     );
-    // Возвращаем стандартное меню ввода (убираем длинную синюю кнопку, которая мешает писать)
+    // Компактная кнопка Mini App (короткая "⚡ App", чтобы не мешать строке ввода)
     await bot.api.setChatMenuButton({
-      menu_button: { type: "default" }
+      menu_button: {
+        type: "web_app",
+        text: "⚡ App",
+        web_app: { url: "https://akilum-anon-bot.onrender.com?v=4" }
+      }
     });
-    console.log("✓ Профиль обновлен, синяя кнопка убрана из строки ввода");
+    console.log("✓ Профиль и компактная кнопка Mini App настроены");
   } catch (e) {
     console.warn("Предупреждение профиля:", e.message);
   }
@@ -253,13 +258,13 @@ bot.command("start", async (ctx) => {
     return;
   }
 
-  // Обычный старт: если зашёл владелец бота — показываем его кабинет
+  // Обычный старт: показываем личный кабинет и персональную ссылку
   userStates.delete(userId);
   const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
 
   if (userId === OWNER_ID) {
     const kb = new InlineKeyboard()
-      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com")
+      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com?v=4")
       .row()
       .url("🔗 Поделиться", getShareUrl(userId))
       .row()
@@ -283,7 +288,7 @@ bot.command("start", async (ctx) => {
   });
 
   const strangerKb = new InlineKeyboard()
-    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com")
+    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com?v=4")
     .row()
     .text("🎲 Случайный вопрос", `action:rand_${OWNER_ID}`)
     .text("🔗 Создать свою ссылку", "action:my_own_link");
@@ -293,6 +298,19 @@ bot.command("start", async (ctx) => {
     `<i>(это 100% анонимно 🤫)</i>\n\n` +
     `👇 Отправь сообщение прямо сюда в чат:`,
     { parse_mode: "HTML", reply_markup: strangerKb }
+  );
+});
+
+// 2. Команда /app (Открыть Mini App)
+bot.command("app", async (ctx) => {
+  const kb = new InlineKeyboard().webApp(
+    "⚡ Открыть Akilum Mini App",
+    "https://akilum-anon-bot.onrender.com?v=4"
+  );
+  await ctx.reply(
+    "✨ <b>Akilum Mini App</b>\n\n" +
+    "Твой личный кабинет, выбор тем для Сторис и входящие вопросы 👇",
+    { parse_mode: "HTML", reply_markup: kb }
   );
 });
 
@@ -988,7 +1006,12 @@ const server = http.createServer((req, res) => {
   // 4. Главная страница (Mini App)
   const indexPath = path.join(__dirname, "public", "index.html");
   if (fs.existsSync(indexPath)) {
-    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.writeHead(200, {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0",
+    });
     return fs.createReadStream(indexPath).pipe(res);
   }
 
