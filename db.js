@@ -37,27 +37,119 @@ function getOrCreateUser(userId, name = "Пользователь", username = "
   const idStr = String(userId);
   if (!data.users[idStr]) {
     data.users[idStr] = {
-      id: userId,
+      id: Number(userId),
       name,
-      username: username ? `@${username}` : "",
+      username: username ? (username.startsWith("@") ? username : `@${username}`) : "",
+      personality: "tsundere", // tsundere, kawaii, alien, flirty
+      language: "ru",          // ru, en, ja
+      isPremium: false,
+      premiumTier: null,
       questionsReceived: 0,
       repliesSent: 0,
+      starsReceived: 0,
       createdAt: new Date().toISOString(),
     };
     saveDatabase();
   } else {
-    // Обновляем имя если сменилось
+    // Обновляем имя и юзернейм если сменились
+    let updated = false;
     if (name && data.users[idStr].name !== name) {
       data.users[idStr].name = name;
-      data.users[idStr].username = username ? `@${username}` : data.users[idStr].username;
-      saveDatabase();
+      updated = true;
     }
+    if (username) {
+      const cleanUname = username.startsWith("@") ? username : `@${username}`;
+      if (data.users[idStr].username !== cleanUname) {
+        data.users[idStr].username = cleanUname;
+        updated = true;
+      }
+    }
+    if (!data.users[idStr].personality) {
+      data.users[idStr].personality = "tsundere";
+      updated = true;
+    }
+    if (!data.users[idStr].language) {
+      data.users[idStr].language = "ru";
+      updated = true;
+    }
+    if (updated) saveDatabase();
   }
   return data.users[idStr];
 }
 
 function getUser(userId) {
   return data.users[String(userId)] || null;
+}
+
+function findUser(query) {
+  if (!query) return null;
+  const qStr = String(query).trim();
+  
+  // 1. Поиск по чистому ID
+  if (/^\d+$/.test(qStr)) {
+    const byId = data.users[qStr];
+    if (byId) return byId;
+  }
+  
+  // 2. Поиск по юзернейму (с @ или без)
+  const cleanUname = qStr.replace(/^@/, "").toLowerCase();
+  for (const id of Object.keys(data.users || {})) {
+    const u = data.users[id];
+    if (u.username) {
+      const dbUname = u.username.replace(/^@/, "").toLowerCase();
+      if (dbUname === cleanUname) return u;
+    }
+  }
+
+  // 3. Поиск по точному имени (case-insensitive)
+  for (const id of Object.keys(data.users || {})) {
+    const u = data.users[id];
+    if (u.name && u.name.toLowerCase() === qStr.toLowerCase()) return u;
+  }
+
+  return null;
+}
+
+function setUserPersonality(userId, personality) {
+  const allowed = ["tsundere", "kawaii", "alien", "flirty"];
+  const p = allowed.includes(personality) ? personality : "tsundere";
+  const u = getOrCreateUser(userId);
+  u.personality = p;
+  saveDatabase();
+  return p;
+}
+
+function getUserPersonality(userId) {
+  const u = getUser(userId);
+  return (u && u.personality) || "tsundere";
+}
+
+function setUserLanguage(userId, lang) {
+  const allowed = ["ru", "en", "ja"];
+  const l = allowed.includes(lang) ? lang : "ru";
+  const u = getOrCreateUser(userId);
+  u.language = l;
+  saveDatabase();
+  return l;
+}
+
+function getUserLanguage(userId) {
+  const u = getUser(userId);
+  return (u && u.language) || "ru";
+}
+
+function setUserPremium(userId, isPremium = true, tier = "stars_150") {
+  const u = getOrCreateUser(userId);
+  u.isPremium = !!isPremium;
+  u.premiumTier = tier;
+  u.premiumActivatedAt = Date.now();
+  saveDatabase();
+  return u;
+}
+
+function isUserPremium(userId) {
+  const u = getUser(userId);
+  return !!(u && (u.isPremium || (u.starsReceived && u.starsReceived >= 50)));
 }
 
 function saveQuestion(targetId, senderId, text, options = {}) {
@@ -173,6 +265,13 @@ function getUserQuestions(userId) {
 module.exports = {
   getOrCreateUser,
   getUser,
+  findUser,
+  setUserPersonality,
+  getUserPersonality,
+  setUserLanguage,
+  getUserLanguage,
+  setUserPremium,
+  isUserPremium,
   saveQuestion,
   getQuestion,
   setQuestionReply,

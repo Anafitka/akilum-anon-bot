@@ -7,772 +7,339 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #07090e;
-      --surface: rgba(255, 255, 255, 0.05);
-      --surface-elevated: rgba(255, 255, 255, 0.08);
-      --border: rgba(255, 255, 255, 0.1);
-      --border-glow: rgba(0, 245, 212, 0.35);
+      --surface: rgba(255,255,255,0.05);
+      --surface-elevated: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.1);
+      --border-glow: rgba(0,245,212,0.35);
       --primary: #00F5D4;
-      --primary-grad: linear-gradient(135deg, #00F5D4 0%, #00C896 50%, #FFD600 100%);
-      --accent-grad: linear-gradient(135deg, #00F5D4 0%, #00E5FF 50%, #FFD600 100%);
+      --primary-grad: linear-gradient(135deg,#00F5D4 0%,#00C896 50%,#FFD600 100%);
+      --accent-grad: linear-gradient(135deg,#00F5D4 0%,#00E5FF 50%,#FFD600 100%);
+      --gold-grad: linear-gradient(135deg,#FFE259 0%,#FFA751 50%,#FF5722 100%);
       --text: #ffffff;
       --text-sec: #9aa8bd;
       --text-ter: #54657d;
-      --radius-xl: 32px;
-      --radius-lg: 24px;
-      --radius-md: 16px;
-      --shadow-glow: 0 16px 40px -10px rgba(0, 245, 212, 0.35);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --shadow-glow: 0 16px 40px -10px rgba(0,245,212,0.35);
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-      padding-bottom: 96px;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* Ambient background gradient spheres */
-    .ambient-sphere-1 {
-      position: fixed;
-      width: 380px;
-      height: 380px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 245, 212, 0.22) 0%, rgba(0, 200, 150, 0.08) 50%, transparent 75%);
-      top: -120px;
-      right: -80px;
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(40px);
-    }
-
-    .ambient-sphere-2 {
-      position: fixed;
-      width: 320px;
-      height: 320px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 214, 0, 0.14) 0%, rgba(0, 229, 255, 0.08) 50%, transparent 75%);
-      bottom: 60px;
-      left: -80px;
-      pointer-events: none;
-      z-index: 0;
-      filter: blur(40px);
-    }
-
-    .app-wrapper {
-      position: relative;
-      z-index: 1;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px 20px;
-    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+    body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:90px;-webkit-font-smoothing:antialiased;}
+    .ambient-sphere-1{position:fixed;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(0,245,212,0.22) 0%,rgba(0,200,150,0.08) 50%,transparent 75%);top:-120px;right:-80px;pointer-events:none;z-index:0;filter:blur(40px);}
+    .ambient-sphere-2{position:fixed;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,0,0.14) 0%,rgba(0,229,255,0.08) 50%,transparent 75%);bottom:60px;left:-80px;pointer-events:none;z-index:0;filter:blur(40px);}
+    .app-wrapper{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:14px 16px;}
 
     /* Header */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 22px;
-      padding: 4px 0;
-    }
+    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .mascot-profile{display:flex;align-items:center;gap:10px;}
+    .mascot-avatar{width:48px;height:48px;border-radius:18px;background:var(--primary-grad);padding:2px;box-shadow:0 8px 24px rgba(0,245,212,0.35);position:relative;flex-shrink:0;}
+    .mascot-avatar img{width:100%;height:100%;border-radius:16px;object-fit:cover;display:block;}
+    .live-dot{position:absolute;bottom:-3px;right:-3px;background:#07090e;border:1.5px solid #00F5D4;width:11px;height:11px;border-radius:50%;box-shadow:0 0 8px #00F5D4;}
+    .brand-title{font-size:20px;font-weight:900;letter-spacing:-0.02em;background:linear-gradient(135deg,#fff 40%,#70FFF1 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .brand-sub{font-size:11px;color:var(--text-sec);font-weight:600;margin-top:1px;}
 
-    .mascot-profile {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    /* Header right controls */
+    .header-controls{display:flex;align-items:center;gap:8px;}
+    .lang-toggle{font-size:11px;font-weight:800;color:var(--primary);background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.2);padding:5px 10px;border-radius:20px;cursor:pointer;letter-spacing:0.3px;}
+    .mode-pill{font-size:10px;font-weight:800;letter-spacing:0.5px;color:#00F5D4;background:rgba(0,245,212,0.08);border:1px solid rgba(0,245,212,0.18);padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+    .mode-pill-dot{width:5px;height:5px;border-radius:50%;background:#00F5D4;box-shadow:0 0 6px #00F5D4;}
 
-    .mascot-avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 20px;
-      background: var(--primary-grad);
-      padding: 2px;
-      box-shadow: 0 8px 24px rgba(0, 245, 212, 0.35);
-      position: relative;
-    }
+    /* Personality row */
+    .personality-row{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+    .personality-row::-webkit-scrollbar{display:none;}
+    .p-chip{flex-shrink:0;padding:6px 14px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);border-radius:20px;font-size:12px;font-weight:800;color:var(--text-sec);cursor:pointer;transition:all 0.18s ease;white-space:nowrap;}
+    .p-chip.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.4);color:#00F5D4;}
+    .p-chip:active{transform:scale(0.95);}
 
-    .mascot-avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 18px;
-      object-fit: cover;
-      display: block;
-    }
+    /* Tabs */
+    .nav-tabs{display:flex;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:18px;padding:4px;margin-bottom:16px;backdrop-filter:blur(20px);}
+    .tab-btn{flex:1;padding:9px 6px;border:none;background:transparent;color:var(--text-sec);font-family:inherit;font-size:12px;font-weight:800;border-radius:14px;cursor:pointer;transition:all 0.2s cubic-bezier(0.16,1,0.3,1);display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
+    .tab-btn.active{background:linear-gradient(135deg,#00F5D4 0%,#00D29E 100%);color:#05090e;box-shadow:0 4px 16px rgba(0,245,212,0.3);transform:translateY(-1px);}
+    .tab-btn.premium-tab.active{background:linear-gradient(135deg,#FFE259 0%,#FFA751 100%);color:#1a0a00;}
 
-    .live-status-pill {
-      position: absolute;
-      bottom: -4px;
-      right: -4px;
-      background: #07090e;
-      border: 1.5px solid #00F5D4;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #00F5D4;
-    }
-
-    .brand-title {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 40%, #70FFF1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1.2;
-    }
-
-    .brand-sub {
-      font-size: 12px;
-      color: var(--text-sec);
-      font-weight: 600;
-    }
-
-    .mode-pill {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      color: #00F5D4;
-      background: rgba(0, 245, 212, 0.1);
-      border: 1px solid rgba(0, 245, 212, 0.25);
-      padding: 6px 12px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .mode-pill-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #00F5D4;
-      box-shadow: 0 0 6px #00F5D4;
-    }
-
-    /* Segmented Control / Tabs Switcher */
-    .nav-tabs {
-      display: flex;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 4px;
-      margin-bottom: 22px;
-      backdrop-filter: blur(20px);
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 10px 12px;
-      border: none;
-      background: transparent;
-      color: var(--text-sec);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 800;
-      border-radius: 16px;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .tab-btn.active {
-      background: linear-gradient(135deg, #00F5D4 0%, #00D29E 100%);
-      color: #05090e;
-      box-shadow: 0 4px 16px rgba(0, 245, 212, 0.35);
-      transform: translateY(-1px);
-    }
+    .tab-view{display:none;}
+    .tab-view.active{display:block;animation:tabFadeIn 0.22s ease-out;}
+    @keyframes tabFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
     /* Glass Cards */
-    .glass-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 24px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      margin-bottom: 18px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
-      position: relative;
-      overflow: hidden;
-    }
+    .glass-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);margin-bottom:14px;box-shadow:0 20px 40px rgba(0,0,0,0.45);position:relative;overflow:hidden;}
 
-    /* Live 3D Floating Story Preview */
-    .story-hero-preview {
-      background: linear-gradient(135deg, #00F5D4 0%, #00B894 45%, #FFD600 100%);
-      border-radius: 28px;
-      padding: 30px 22px;
-      text-align: center;
-      margin-bottom: 20px;
-      box-shadow: 0 20px 50px -10px rgba(0, 245, 212, 0.4);
-      position: relative;
-    }
+    /* Story preview */
+    .story-hero-preview{background:linear-gradient(135deg,#00F5D4 0%,#00B894 45%,#FFD600 100%);border-radius:24px;padding:24px 20px;text-align:center;margin-bottom:16px;box-shadow:0 20px 50px -10px rgba(0,245,212,0.4);transition:all 0.3s ease;}
+    .story-card-inner{background:#fff;border-radius:18px;padding:22px 18px;box-shadow:0 16px 36px rgba(0,0,0,0.25);}
+    .preview-pill{display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;color:#4b5563;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:800;margin-bottom:12px;}
+    .preview-text{font-size:18px;font-weight:900;color:#111827;line-height:1.35;margin-bottom:14px;word-break:break-word;}
+    .preview-watermark{font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:0.5px;}
 
-    .story-card-inner {
-      background: #ffffff;
-      border-radius: 22px;
-      padding: 28px 20px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
-    }
+    /* Theme & prompt row */
+    .theme-picker-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+    .theme-picker-row::-webkit-scrollbar{display:none;}
+    .theme-pill{flex-shrink:0;padding:6px 14px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);border-radius:20px;font-size:12px;font-weight:800;color:var(--text-sec);cursor:pointer;transition:all 0.15s ease;white-space:nowrap;}
+    .theme-pill.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.4);color:#00F5D4;}
+    .prompt-chips-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+    .prompt-chips-row::-webkit-scrollbar{display:none;}
+    .prompt-chip{flex-shrink:0;padding:6px 12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);border-radius:14px;font-size:11px;font-weight:800;color:var(--text-sec);cursor:pointer;white-space:nowrap;transition:all 0.15s ease;}
+    .prompt-chip.active{border-color:rgba(0,245,212,0.3);color:var(--primary);background:rgba(0,245,212,0.08);}
 
-    .preview-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f3f4f6;
-      color: #4b5563;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-
-    .preview-text {
-      font-size: 20px;
-      font-weight: 900;
-      color: #111827;
-      line-height: 1.35;
-      margin-bottom: 18px;
-      word-break: break-word;
-    }
-
-    .preview-watermark {
-      font-size: 11px;
-      color: #9ca3af;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    /* Link Widget */
-    .link-widget {
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px dashed rgba(255, 255, 255, 0.18);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .link-value {
-      font-size: 13px;
-      font-weight: 700;
-      color: #fff;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    /* Link widget */
+    .link-widget{background:rgba(0,0,0,0.4);border:1px dashed rgba(255,255,255,0.16);border-radius:var(--radius-md);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+    .link-value{font-size:12px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
     /* Buttons */
-    .btn {
-      width: 100%;
-      padding: 16px 20px;
-      border-radius: 18px;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 800;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.18s ease;
-      letter-spacing: -0.01em;
-    }
+    .btn{width:100%;padding:14px 18px;border-radius:16px;font-family:inherit;font-size:14px;font-weight:800;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.18s ease;letter-spacing:-0.01em;margin-bottom:8px;}
+    .btn:last-child{margin-bottom:0;}
+    .btn:active{transform:scale(0.97);}
+    .btn-gradient{background:linear-gradient(135deg,#00F5D4 0%,#00B894 100%);color:#05090e;box-shadow:0 8px 24px rgba(0,245,212,0.3);}
+    .btn-secondary{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text);}
+    .btn-copy{padding:6px 12px!important;width:auto!important;font-size:11px!important;border-radius:10px!important;margin-bottom:0!important;background:rgba(0,245,212,0.15);color:#00F5D4;border:1px solid rgba(0,245,212,0.3);}
 
-    .btn:active {
-      transform: scale(0.97);
-      opacity: 0.9;
-    }
+    /* Metrics */
+    .metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0;}
+    .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:center;}
+    .metric-value{font-size:22px;font-weight:900;background:var(--primary-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;}
+    .metric-desc{font-size:10px;color:var(--text-sec);font-weight:700;}
 
-    .btn-gradient {
-      background: linear-gradient(135deg, #00F5D4 0%, #00D29E 60%, #FFD600 100%);
-      color: #050a0f;
-      font-weight: 900;
-      box-shadow: 0 16px 36px -10px rgba(0, 245, 212, 0.4);
-    }
+    /* Ask tab — input */
+    .input-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:18px;margin-bottom:12px;}
+    .recipient-box{background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-md);padding:12px;margin-bottom:12px;}
+    .recipient-label{font-size:10px;font-weight:800;color:var(--text-ter);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+    .recipient-tabs{display:flex;gap:6px;margin-bottom:10px;}
+    .recipient-tab{flex:1;padding:7px 10px;border-radius:10px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-sec);cursor:pointer;text-align:center;transition:all 0.15s ease;}
+    .recipient-tab.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.35);color:var(--primary);}
+    .recipient-input-wrap{display:none;}
+    .recipient-input-wrap.visible{display:block;}
+    .recipient-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:13px;font-weight:700;color:#fff;outline:none;transition:border-color 0.15s ease;}
+    .recipient-input:focus{border-color:rgba(0,245,212,0.4);}
+    .recipient-input::placeholder{color:var(--text-ter);}
+    .recipient-found{font-size:11px;color:#00F5D4;font-weight:700;margin-top:5px;min-height:16px;}
+    .textarea-field{width:100%;background:transparent;border:none;outline:none;font-family:inherit;font-size:14px;font-weight:600;color:#fff;resize:none;min-height:100px;line-height:1.5;padding:0;}
+    .textarea-field::placeholder{color:var(--text-ter);}
+    .input-bottom-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);}
+    .dice-action-btn{background:none;border:none;color:var(--text-sec);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0;}
+    .dice-icon{font-size:16px;display:inline-block;transition:transform 0.35s ease;}
+    .char-limit{font-size:11px;font-weight:700;color:var(--text-ter);}
 
-    .btn-secondary {
-      background: var(--surface-elevated);
-      color: #fff;
-      border: 1px solid var(--border);
-      margin-top: 10px;
-    }
+    /* Inbox */
+    .inbox-list{display:flex;flex-direction:column;gap:10px;}
+    .inbox-item{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;}
+    .inbox-time{font-size:10px;color:var(--text-ter);font-weight:700;margin-bottom:6px;}
+    .inbox-text{font-size:14px;font-weight:700;color:#fff;line-height:1.4;margin-bottom:10px;}
+    .inbox-actions{display:flex;gap:6px;}
+    .pill-btn{flex:1;padding:7px 10px;border-radius:10px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .pill-btn:active{background:rgba(255,255,255,0.12);}
 
-    .btn-copy {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 800;
-      width: auto;
-      flex-shrink: 0;
-    }
-
-    /* Textarea question input */
-    .input-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 24px;
-      margin-bottom: 16px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-      position: relative;
-    }
-
-    .input-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 24px;
-      right: 24px;
-      height: 2px;
-      background: var(--primary-grad);
-      border-radius: 2px;
-    }
-
-    .textarea-field {
-      width: 100%;
-      min-height: 130px;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #fff;
-      font-family: inherit;
-      font-size: 18px;
-      font-weight: 700;
-      line-height: 1.4;
-      resize: none;
-      user-select: text;
-    }
-
-    .textarea-field::placeholder {
-      color: var(--text-ter);
-      font-weight: 600;
-    }
-
-    .input-bottom-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .dice-action-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: #fff;
-      border-radius: 14px;
-      padding: 8px 14px;
-      font-size: 13px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .dice-action-btn:active {
-      transform: scale(0.92);
-    }
-
-    .dice-icon {
-      font-size: 16px;
-      display: inline-block;
-      transition: transform 0.35s ease;
-    }
-
-    .char-limit {
-      font-size: 12px;
-      color: var(--text-ter);
-      font-weight: 700;
-    }
-
-    /* Theme Picker */
-    .theme-picker-row {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .theme-pill {
-      flex: 1;
-      padding: 8px 6px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: var(--text-sec);
-      font-size: 11px;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s ease;
-    }
-
-    .theme-pill.active {
-      background: rgba(0, 245, 212, 0.16);
-      border-color: #00F5D4;
-      color: #00F5D4;
-      box-shadow: 0 0 12px rgba(0, 245, 212, 0.3);
-    }
-
-    /* Prompt Chips */
-    .prompt-chips-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 16px;
-    }
-
-    .prompt-chip {
-      padding: 6px 10px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-sec);
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .prompt-chip.active {
-      background: rgba(255, 255, 255, 0.16);
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .btn-super {
-      background: linear-gradient(135deg, #FFE259 0%, #FFA751 50%, #FF5722 100%);
-      color: #0c0800;
-      font-weight: 900;
-      margin-top: 10px;
-      box-shadow: 0 12px 30px -8px rgba(255, 170, 0, 0.45);
-    }
-
-    /* Stats Row */
-    .metrics-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .metric-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px 10px;
-      text-align: center;
-    }
-
-    .metric-value {
-      font-size: 26px;
-      font-weight: 900;
-      background: var(--primary-grad);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 2px;
-    }
-
-    .metric-desc {
-      font-size: 11px;
-      color: var(--text-sec);
-      font-weight: 700;
-    }
-
-    /* Inbox items */
-    .inbox-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .inbox-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-    }
-
-    .inbox-time {
-      font-size: 11px;
-      color: var(--text-ter);
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .inbox-text {
-      font-size: 15px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.4;
-      margin-bottom: 12px;
-    }
-
-    .inbox-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .pill-btn {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 800;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.06);
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .pill-btn:active {
-      background: rgba(255, 255, 255, 0.15);
-    }
+    /* Premium section */
+    .premium-hero{background:linear-gradient(135deg,#FFE259 0%,#FFA751 60%,#FF5722 100%);border-radius:24px;padding:24px 20px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden;}
+    .premium-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.1);pointer-events:none;}
+    .premium-hero-title{font-size:26px;font-weight:900;color:#1a0800;letter-spacing:-0.03em;margin-bottom:4px;}
+    .premium-hero-sub{font-size:13px;font-weight:700;color:rgba(26,8,0,0.7);}
+    .feature-list{margin-bottom:14px;}
+    .feature-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+    .feature-item:last-child{border-bottom:none;}
+    .feature-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+    .feature-text-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;}
+    .feature-text-desc{font-size:11px;color:var(--text-sec);font-weight:600;line-height:1.4;}
+    .tier-card{border-radius:16px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all 0.18s ease;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;}
+    .tier-card:active{transform:scale(0.98);}
+    .tier-card.t15{background:rgba(0,245,212,0.08);border:1px solid rgba(0,245,212,0.2);}
+    .tier-card.t50{background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);}
+    .tier-card.t150{background:linear-gradient(135deg,rgba(255,226,89,0.15) 0%,rgba(255,167,81,0.1) 100%);border:1px solid rgba(255,215,0,0.4);}
+    .tier-card.t500{background:linear-gradient(135deg,rgba(139,92,246,0.2) 0%,rgba(59,130,246,0.1) 100%);border:1px solid rgba(139,92,246,0.45);}
+    .tier-name{font-size:13px;font-weight:800;color:#fff;}
+    .tier-desc{font-size:11px;color:var(--text-sec);font-weight:600;margin-top:2px;max-width:200px;}
+    .tier-badge{font-size:10px;font-weight:900;padding:3px 8px;border-radius:10px;white-space:nowrap;}
+    .tier-card.t150 .tier-badge{background:rgba(255,215,0,0.2);color:#FFD700;border:1px solid rgba(255,215,0,0.35);}
+    .tier-card.t500 .tier-badge{background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid rgba(139,92,246,0.3);}
+    .tier-card.t15 .tier-badge,.tier-card.t50 .tier-badge{background:rgba(0,245,212,0.12);color:#00F5D4;border:1px solid rgba(0,245,212,0.25);}
+    .tier-stars{font-size:16px;font-weight:900;color:#FFD700;}
 
     /* Toast */
-    .toast-pill {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-90px);
-      background: rgba(10, 16, 24, 0.95);
-      border: 1px solid var(--primary);
-      color: #fff;
-      padding: 12px 22px;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 800;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .toast-pill.active {
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .tab-view {
-      display: none;
-    }
-
-    .tab-view.active {
-      display: block;
-      animation: tabFadeIn 0.22s ease-out;
-    }
-
-    @keyframes tabFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .toast-pill{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(10,16,24,0.96);border:1px solid var(--primary);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:800;box-shadow:0 16px 40px rgba(0,0,0,0.6);transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);z-index:9999;display:flex;align-items:center;gap:8px;white-space:nowrap;}
+    .toast-pill.active{transform:translateX(-50%) translateY(0);}
+    .section-label{font-size:10px;font-weight:800;color:var(--text-ter);letter-spacing:0.7px;text-transform:uppercase;margin-bottom:8px;}
   </style>
 </head>
 <body>
   <div class="ambient-sphere-1"></div>
   <div class="ambient-sphere-2"></div>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast-pill">
-    <span id="toast-msg">✓ Готово!</span>
-  </div>
+  <div id="toast" class="toast-pill"><span id="toast-msg">✓ Готово!</span></div>
 
   <div class="app-wrapper">
-    <!-- Top Header -->
+    <!-- Header -->
     <header class="top-bar">
       <div class="mascot-profile">
         <div class="mascot-avatar">
-          <img src="/avatar.png" alt="Lum Mascot">
-          <div class="live-status-pill"></div>
+          <img src="/avatar.png" alt="Lum">
+          <div class="live-dot"></div>
         </div>
         <div>
           <div class="brand-title">AKILUM</div>
           <div class="brand-sub" id="greeting-name">Анонимные вопросы</div>
         </div>
       </div>
-      <div class="mode-pill">
-        <div class="mode-pill-dot"></div>
-        100% АНОНИМНО
+      <div class="header-controls">
+        <button class="lang-toggle" onclick="cycleLang()" id="lang-btn">🇷🇺 RU</button>
+        <div class="mode-pill"><div class="mode-pill-dot"></div><span id="anon-label">АНОНИМНО</span></div>
       </div>
     </header>
 
-    <!-- Navigation Tabs -->
+    <!-- Personality switcher -->
+    <div class="personality-row" id="personality-row">
+      <button class="p-chip active" data-p="tsundere" onclick="switchPersonality('tsundere',this)">⚡ Дерзкая</button>
+      <button class="p-chip" data-p="kawaii" onclick="switchPersonality('kawaii',this)">❤️ Милая</button>
+      <button class="p-chip" data-p="alien" onclick="switchPersonality('alien',this)">🛸 Пришелец</button>
+      <button class="p-chip" data-p="flirty" onclick="switchPersonality('flirty',this)">😉 Флирт</button>
+    </div>
+
+    <!-- Tabs -->
     <nav class="nav-tabs">
-      <button class="tab-btn active" onclick="switchNav('share', this)">
-        <span>📲</span> Поделиться
-      </button>
-      <button class="tab-btn" onclick="switchNav('ask', this)">
-        <span>✍️</span> Написать
-      </button>
-      <button class="tab-btn" onclick="switchNav('inbox', this)">
-        <span>💌</span> Входящие
-      </button>
+      <button class="tab-btn active" onclick="switchNav('share',this)" id="tab-share">📲 <span class="tab-label">Поделиться</span></button>
+      <button class="tab-btn" onclick="switchNav('ask',this)" id="tab-ask">✍️ <span class="tab-label">Написать</span></button>
+      <button class="tab-btn" onclick="switchNav('inbox',this)" id="tab-inbox">💌 <span class="tab-label">Входящие</span></button>
+      <button class="tab-btn premium-tab" onclick="switchNav('premium',this)" id="tab-premium">👑</button>
     </nav>
 
-    <!-- TAB 1: ПОДЕЛИТЬСЯ В СТОРИС -->
+    <!-- TAB 1: ПОДЕЛИТЬСЯ -->
     <main id="view-share" class="tab-view active">
-      <!-- Theme Switcher -->
-      <div style="margin-bottom: 12px;">
-        <div style="font-size: 11px; font-weight: 800; color: var(--text-sec); margin-bottom: 8px; letter-spacing: 0.5px; display: flex; justify-content: space-between;">
-          <span>🎨 СТИЛЬ КАРТОЧКИ:</span>
-          <span id="theme-badge-name" style="color: var(--primary);">⚡ Lum Signature</span>
-        </div>
-        <div class="theme-picker-row">
-          <button class="theme-pill active" onclick="setStoryTheme('lum', this)">⚡ Lum</button>
-          <button class="theme-pill" onclick="setStoryTheme('obsidian', this)">🖤 Stealth</button>
-          <button class="theme-pill" onclick="setStoryTheme('gold', this)">👑 Gold VIP</button>
-          <button class="theme-pill" onclick="setStoryTheme('sakura', this)">🌸 Sakura</button>
-        </div>
+      <div class="section-label" id="lbl-style">🎨 СТИЛЬ КАРТОЧКИ:</div>
+      <div class="theme-picker-row" style="margin-bottom:14px;">
+        <button class="theme-pill active" onclick="setStoryTheme('lum',this)">⚡ Lum</button>
+        <button class="theme-pill" onclick="setStoryTheme('obsidian',this)">🖤 Stealth</button>
+        <button class="theme-pill" onclick="setStoryTheme('gold',this)">👑 Gold VIP</button>
+        <button class="theme-pill" onclick="setStoryTheme('sakura',this)">🌸 Sakura</button>
       </div>
 
-      <!-- Live 3D Floating Story Preview -->
       <div id="story-preview-card" class="story-hero-preview">
         <div id="story-inner-card" class="story-card-inner">
-          <div id="story-badge-el" class="preview-pill">
-            <span>⚡</span> ask me anything
-          </div>
-          <div id="story-text-el" class="preview-text">
-            Напиши мне всё,<br>о чём ты молчишь...
-          </div>
-          <div class="preview-watermark">
-            🤫 100% анонимно • @akilum_anon_bot
-          </div>
+          <div id="story-badge-el" class="preview-pill"><span>⚡</span> ask me anything</div>
+          <div id="story-text-el" class="preview-text">Напиши мне всё,<br>о чём ты молчишь...</div>
+          <div class="preview-watermark">🤫 100% анонимно • @akilum_anon_bot</div>
         </div>
       </div>
 
-      <!-- Prompt Switcher -->
-      <div style="margin-bottom: 16px;">
-        <div style="font-size: 11px; font-weight: 800; color: var(--text-sec); margin-bottom: 8px; letter-spacing: 0.5px;">
-          💬 ВЫБЕРИ ТЕМУ ДЛЯ СТОРИС:
-        </div>
-        <div class="prompt-chips-row">
-          <button class="prompt-chip active" onclick="setStoryPrompt('Напиши мне всё,\nо чём ты молчишь...', this)">Напиши мне всё...</button>
-          <button class="prompt-chip" onclick="setStoryPrompt('Угадай, кто мне\nсейчас нравится? 🤫', this)">Угадай, кто нравится 🤫</button>
-          <button class="prompt-chip" onclick="setStoryPrompt('Оцени мой вайб\nот 1 до 10 🔥', this)">Оцени мой вайб 🔥</button>
-          <button class="prompt-chip" onclick="setStoryPrompt('Задай самый смелый\nвопрос про нас 👀', this)">Смелый вопрос 👀</button>
-        </div>
+      <div class="section-label" id="lbl-topic" style="margin-bottom:8px;">💬 ТЕМА ДЛЯ СТОРИС:</div>
+      <div class="prompt-chips-row" style="margin-bottom:14px;">
+        <button class="prompt-chip active" onclick="setStoryPrompt('Напиши мне всё,\nо чём ты молчишь...',this)">Напиши мне всё...</button>
+        <button class="prompt-chip" onclick="setStoryPrompt('Угадай, кто мне\nсейчас нравится? 🤫',this)">Угадай кто нравится 🤫</button>
+        <button class="prompt-chip" onclick="setStoryPrompt('Оцени мой вайб\nот 1 до 10 🔥',this)">Оцени мой вайб 🔥</button>
+        <button class="prompt-chip" onclick="setStoryPrompt('Задай самый смелый\nвопрос про нас 👀',this)">Смелый вопрос 👀</button>
       </div>
 
-      <!-- Link Box -->
-      <div class="glass-card" style="padding: 20px;">
-        <div style="font-size: 13px; font-weight: 800; color: var(--text-sec); margin-bottom: 10px; display: flex; justify-content: space-between;">
-          <span>ТВОЯ ССЫЛКА ДЛЯ СТОРИС</span>
-          <span style="color: var(--primary); display: flex; align-items: center; gap: 4px;">⚡ LUM EDITION</span>
-        </div>
-
+      <div class="glass-card" style="padding:16px;">
+        <div class="section-label" id="lbl-mylink">ТВОЯ ССЫЛКА ДЛЯ СТОРИС</div>
         <div class="link-widget">
-          <span style="font-size: 16px;">🔗</span>
+          <span style="font-size:14px;">🔗</span>
           <span class="link-value" id="user-link-text">t.me/akilum_anon_bot?start=anon_...</span>
-          <button class="btn btn-copy" onclick="copyShareLink()">Копия</button>
+          <button class="btn btn-copy" onclick="copyShareLink()" id="btn-copy">Копия</button>
         </div>
-
-        <button class="btn btn-gradient" onclick="openShareTelegram()">
-          📲 Опубликовать в Сторис
-        </button>
-
-        <button class="btn btn-secondary" onclick="generateAndSaveStory()">
-          📸 Создать Сторис-карточку (1080×1920)
-        </button>
+        <button class="btn btn-gradient" onclick="openShareTelegram()" id="btn-share">📲 Опубликовать в Сторис</button>
+        <button class="btn btn-secondary" onclick="generateAndSaveStory()" id="btn-story">📸 Создать Сторис-карточку</button>
       </div>
 
-      <!-- Quick Metrics -->
       <div class="metrics-row">
-        <div class="metric-card">
-          <div class="metric-value" id="metric-questions">0</div>
-          <div class="metric-desc">Вопросов</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" id="metric-answers">0</div>
-          <div class="metric-desc">Ответов</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value" id="metric-stars" style="color: #FFD700; background: linear-gradient(135deg, #FFE259 0%, #FFA751 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
-          <div class="metric-desc">⭐ Звёзд</div>
-        </div>
+        <div class="metric-card"><div class="metric-value" id="metric-questions">0</div><div class="metric-desc" id="lbl-questions">Вопросов</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-answers">0</div><div class="metric-desc" id="lbl-answers">Ответов</div></div>
+        <div class="metric-card"><div class="metric-value" id="metric-stars" style="background:linear-gradient(135deg,#FFE259 0%,#FFA751 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">0</div><div class="metric-desc">⭐ Звёзд</div></div>
       </div>
     </main>
 
-    <!-- TAB 2: НАПИСАТЬ АНОНИМНЫЙ ВОПРОС -->
+    <!-- TAB 2: НАПИСАТЬ -->
     <main id="view-ask" class="tab-view">
       <div class="input-card">
-        <div class="preview-pill" style="margin-bottom: 14px;">
-          <span>🔒</span> Твоё имя и контакт скрыты
+        <!-- Recipient selector -->
+        <div class="recipient-box">
+          <div class="recipient-label" id="lbl-recipient">КОМУ ОТПРАВИТЬ:</div>
+          <div class="recipient-tabs">
+            <div class="recipient-tab active" id="rtab-self" onclick="switchRecipient('self',this)" id="lbl-rtab-self">👤 Себе (тест)</div>
+            <div class="recipient-tab" id="rtab-friend" onclick="switchRecipient('friend',this)" id="lbl-rtab-friend">🔍 Другому</div>
+          </div>
+          <div class="recipient-input-wrap" id="friend-input-wrap">
+            <input type="text" class="recipient-input" id="recipient-query" placeholder="@username или числовой ID" oninput="onRecipientInput()" autocapitalize="none" autocorrect="off">
+            <div class="recipient-found" id="recipient-found"></div>
+          </div>
         </div>
 
-        <textarea 
-          id="ask-textarea" 
-          class="textarea-field" 
-          placeholder="Напиши сюда секрет, честный вопрос или комплимент... Получатель никогда не узнает, кто это!"
-          maxlength="800"
-          oninput="handleCharCount()"
-        ></textarea>
-
+        <div class="preview-pill" style="margin-bottom:12px;"><span>🔒</span> <span id="lbl-anon-hidden">Твоё имя и контакт скрыты</span></div>
+        <textarea id="ask-textarea" class="textarea-field" maxlength="800" oninput="handleCharCount()" id="ask-textarea"></textarea>
         <div class="input-bottom-bar">
           <button class="dice-action-btn" onclick="spinDice()">
             <span class="dice-icon" id="dice-spin">🎲</span>
-            <span>Случайный вопрос</span>
+            <span id="lbl-random">Случайный вопрос</span>
           </button>
           <span class="char-limit" id="char-label">0 / 800</span>
         </div>
       </div>
 
-      <button class="btn btn-gradient" onclick="submitAnonymousQuestion()">
-        🚀 Отправить анонимно
-      </button>
+      <button class="btn btn-gradient" onclick="submitAnonymousQuestion()" id="btn-send">🚀 Отправить анонимно</button>
+      <button class="btn btn-secondary" style="background:linear-gradient(135deg,rgba(255,226,89,0.12) 0%,rgba(255,167,81,0.08) 100%);border:1px solid rgba(255,215,0,0.25);color:#FFD700;" onclick="showDonateModal()" id="btn-super">👑 Поддержать со Звёздами ⭐</button>
+      <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--text-ter);font-weight:700;" id="lbl-delivery">⚡ Вопрос придёт получателю прямо в Telegram</div>
+    </main>
 
-      <button class="btn btn-super" onclick="submitSuperQuestion()">
-        👑 Супер-вопрос с донатом (50 ⭐)
-      </button>
-
-      <div style="text-align: center; margin-top: 14px; font-size: 12px; color: var(--text-ter); font-weight: 700;">
-        ⚡ Вопрос придёт получателю прямо в Telegram
+    <!-- TAB 3: ВХОДЯЩИЕ -->
+    <main id="view-inbox" class="tab-view">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span class="section-label" id="lbl-inbox-title" style="margin-bottom:0;">ПОЛУЧЕННЫЕ ВОПРОСЫ</span>
+        <button onclick="loadInbox()" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:800;cursor:pointer;">Обновить 🔄</button>
+      </div>
+      <div class="inbox-list" id="inbox-container">
+        <div class="inbox-item" style="text-align:center;color:var(--text-ter);padding:28px 16px;" id="inbox-empty-msg">
+          Пока вопросов нет. Прикрепи ссылку в Сторис, чтобы начать получать секреты!
+        </div>
       </div>
     </main>
 
-    <!-- TAB 3: ВХОДЯЩИЕ ВОПРОСЫ -->
-    <main id="view-inbox" class="tab-view">
-      <div style="font-size: 14px; font-weight: 800; color: var(--text-sec); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-        <span>ПОЛУЧЕННЫЕ ВОПРОСЫ</span>
-        <button onclick="loadInbox()" style="background: none; border: none; color: var(--primary); font-size: 13px; font-weight: 800; cursor: pointer;">Обновить 🔄</button>
+    <!-- TAB 4: PREMIUM -->
+    <main id="view-premium" class="tab-view">
+      <div class="premium-hero">
+        <div class="premium-hero-title">👑 Akilum Premium</div>
+        <div class="premium-hero-sub" id="lbl-premium-sub">Раскрой все возможности Лам</div>
       </div>
 
-      <div class="inbox-list" id="inbox-container">
-        <div class="inbox-item" style="text-align: center; color: var(--text-ter); padding: 32px 20px;">
-          Пока вопросов нет. Прикрепи свою ссылку в Сторис, чтобы начать получать секреты!
+      <div class="glass-card">
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">⚡</div>
+            <div><div class="feature-text-title" id="feat1-title">Эксклюзивные скины Сторис</div><div class="feature-text-desc" id="feat1-desc">Gold VIP, Obsidian Stealth, Sakura — все для избранных</div></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🌌</div>
+            <div><div class="feature-text-title" id="feat2-title">VIP-статус в профиле</div><div class="feature-text-desc" id="feat2-desc">Звёздный значок и аура Лам — заметный и роскошный</div></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🎭</div>
+            <div><div class="feature-text-title" id="feat3-title">Все характеры Лам</div><div class="feature-text-desc" id="feat3-desc">Цундэрэ, Каваии, Пришелец, Флирт — полный доступ</div></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">🌐</div>
+            <div><div class="feature-text-title" id="feat4-title">Мультиязычность RU/EN/日本語</div><div class="feature-text-desc" id="feat4-desc">Бот говорит на твоём языке — интерфейс и уведомления</div></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">💎</div>
+            <div><div class="feature-text-title" id="feat5-title">Золотая VIP-рамка</div><div class="feature-text-desc" id="feat5-desc">Твои вопросы приходят с VIP-обрамлением и приоритетом</div></div>
+          </div>
         </div>
+      </div>
+
+      <div class="section-label" id="lbl-support-title" style="margin-bottom:10px;">⭐ ПОДДЕРЖАТЬ АВТОРА:</div>
+      <div class="tier-card t15" onclick="buyStars(15)">
+        <div><div class="tier-name" id="tier15-name">⚡ Искры Лам</div><div class="tier-desc" id="tier15-desc">Милый знак внимания и поддержка бота</div></div>
+        <div style="text-align:right;"><div class="tier-stars">15 ⭐</div><div class="tier-badge" id="tier15-badge">Поддержать</div></div>
+      </div>
+      <div class="tier-card t50" onclick="buyStars(50)">
+        <div><div class="tier-name" id="tier50-name">⚡ Разряд Молнии</div><div class="tier-desc" id="tier50-desc">Супер-вопрос с золотой рамкой + донат автору</div></div>
+        <div style="text-align:right;"><div class="tier-stars">50 ⭐</div><div class="tier-badge" id="tier50-badge">Супер-вопрос</div></div>
+      </div>
+      <div class="tier-card t150" onclick="buyStars(150)">
+        <div><div class="tier-name" id="tier150-name">👑 Супернова VIP 🌟</div><div class="tier-desc" id="tier150-desc">Akilum Premium на 1 год: все скины + VIP-значок</div></div>
+        <div style="text-align:right;"><div class="tier-stars">150 ⭐</div><div class="tier-badge" id="tier150-badge">🔥 ХИТ • 85%</div></div>
+      </div>
+      <div class="tier-card t500" onclick="buyStars(500)">
+        <div><div class="tier-name" id="tier500-name">🌌 Галактический Спонсор 🪐</div><div class="tier-desc" id="tier500-desc">Вечный Premium + эксклюзивное признание от Лам</div></div>
+        <div style="text-align:right;"><div class="tier-stars">500 ⭐</div><div class="tier-badge" id="tier500-badge">💎 ЛЕГЕНДА</div></div>
       </div>
     </main>
   </div>
@@ -782,11 +349,122 @@
     if (tg) {
       tg.ready();
       tg.expand();
-      try {
-        tg.setHeaderColor('#07070c');
-        tg.setBackgroundColor('#07070c');
-      } catch (e) {}
+      try { tg.setHeaderColor('#07090e'); tg.setBackgroundColor('#07090e'); } catch(e){}
     }
+
+    // ============================
+    // i18n — мультиязычность
+    // ============================
+    const LANGS = {
+      ru: {
+        flag:'🇷🇺', code:'RU',
+        tagline:'АНОНИМНО',
+        greeting:'Привет,',
+        tabShare:'Поделиться', tabAsk:'Написать', tabInbox:'Входящие',
+        styleLabel:'🎨 СТИЛЬ КАРТОЧКИ:', topicLabel:'💬 ТЕМА ДЛЯ СТОРИС:',
+        myLinkLabel:'ТВОЯ ССЫЛКА ДЛЯ СТОРИС',
+        copyBtn:'Копия', shareBtn:'📲 Опубликовать в Сторис', storyBtn:'📸 Создать Сторис-карточку',
+        questionsLabel:'Вопросов', answersLabel:'Ответов',
+        recipientLabel:'КОМУ ОТПРАВИТЬ:', recipientSelf:'👤 Себе (тест)', recipientFriend:'🔍 Другому',
+        recipientPlaceholder:'@username или числовой ID',
+        anonHidden:'Твоё имя и контакт скрыты',
+        randomLabel:'Случайный вопрос',
+        sendBtn:'🚀 Отправить анонимно',
+        superBtn:'👑 Поддержать со Звёздами ⭐',
+        deliveryLabel:'⚡ Вопрос придёт получателю прямо в Telegram',
+        inboxTitle:'ПОЛУЧЕННЫЕ ВОПРОСЫ',
+        inboxEmpty:'Пока вопросов нет. Прикрепи ссылку в Сторис!',
+        premiumSub:'Раскрой все возможности Лам',
+        feat1:'Эксклюзивные скины Сторис','feat1d':'Gold VIP, Obsidian Stealth, Sakura',
+        feat2:'VIP-статус в профиле','feat2d':'Звёздный значок и аура Лам',
+        feat3:'Все характеры Лам','feat3d':'Цундэрэ, Каваии, Пришелец, Флирт',
+        feat4:'Мультиязычность RU/EN/日本語','feat4d':'Бот говорит на твоём языке',
+        feat5:'Золотая VIP-рамка','feat5d':'Твои вопросы приходят с VIP-обрамлением',
+        supportTitle:'⭐ ПОДДЕРЖАТЬ АВТОРА:',
+        t15name:'⚡ Искры Лам', t15desc:'Милый знак внимания', t15badge:'Поддержать',
+        t50name:'⚡ Разряд Молнии', t50desc:'Супер-вопрос с золотой рамкой', t50badge:'Супер-вопрос',
+        t150name:'👑 Супернова VIP', t150desc:'Premium на 1 год: все скины + VIP', t150badge:'🔥 ХИТ • 85%',
+        t500name:'🌌 Галактический Спонсор', t500desc:'Вечный Premium + признание от Лам', t500badge:'💎 ЛЕГЕНДА',
+        copied:'✓ Ссылка скопирована!',
+        sent:'✓ Вопрос отправлен анонимно!',
+        needText:'⚠️ Напиши что-нибудь!',
+        userNotFound:'⚠️ Пользователь не найден',
+        personality:'🎭 Характер:',
+        pNames:{tsundere:'⚡ Дерзкая', kawaii:'❤️ Милая', alien:'🛸 Пришелец', flirty:'😉 Флирт'},
+      },
+      en: {
+        flag:'🇬🇧', code:'EN',
+        tagline:'ANONYMOUS',
+        greeting:'Hello,',
+        tabShare:'Share', tabAsk:'Ask', tabInbox:'Inbox',
+        styleLabel:'🎨 CARD STYLE:', topicLabel:'💬 STORY TOPIC:',
+        myLinkLabel:'YOUR STORY LINK',
+        copyBtn:'Copy', shareBtn:'📲 Share to Stories', storyBtn:'📸 Create Story Card',
+        questionsLabel:'Questions', answersLabel:'Answers',
+        recipientLabel:'SEND TO:', recipientSelf:'👤 Myself (Test)', recipientFriend:'🔍 Someone Else',
+        recipientPlaceholder:'@username or numeric ID',
+        anonHidden:'Your identity is 100% hidden',
+        randomLabel:'Random question',
+        sendBtn:'🚀 Send Anonymously',
+        superBtn:'👑 Support with Stars ⭐',
+        deliveryLabel:'⚡ Message delivered directly in Telegram',
+        inboxTitle:'RECEIVED QUESTIONS',
+        inboxEmpty:'No questions yet. Post your link in Stories!',
+        premiumSub:'Unlock Lum\'s full power',
+        feat1:'Exclusive Story Skins','feat1d':'Gold VIP, Obsidian Stealth, Sakura',
+        feat2:'VIP Profile Status','feat2d':'Star badge and Lum alien aura',
+        feat3:'All Lum Personalities','feat3d':'Tsundere, Kawaii, Alien, Flirty',
+        feat4:'Multilingual RU/EN/日本語','feat4d':'Bot speaks your language',
+        feat5:'Gold VIP Frame','feat5d':'Your questions arrive with VIP glow',
+        supportTitle:'⭐ SUPPORT THE CREATOR:',
+        t15name:'⚡ Lum\'s Spark', t15desc:'Sweet token of support', t15badge:'Support',
+        t50name:'⚡ Lightning Bolt', t50desc:'Super-question with gold frame', t50badge:'Super-Q',
+        t150name:'👑 Supernova VIP', t150desc:'1-Year Premium: all skins + VIP', t150badge:'🔥 TOP • 85%',
+        t500name:'🌌 Galactic Lord', t500desc:'Lifetime Premium + Lum dedication', t500badge:'💎 LEGEND',
+        copied:'✓ Link copied!',
+        sent:'✓ Secret sent anonymously!',
+        needText:'⚠️ Please write something!',
+        userNotFound:'⚠️ User not found',
+        personality:'🎭 Personality:',
+        pNames:{tsundere:'⚡ Tsundere', kawaii:'❤️ Sweet', alien:'🛸 Alien', flirty:'😉 Flirty'},
+      },
+      ja: {
+        flag:'🇯🇵', code:'JA',
+        tagline:'完全匿名',
+        greeting:'こんにちは、',
+        tabShare:'シェア', tabAsk:'質問', tabInbox:'受信箱',
+        styleLabel:'🎨 カードスタイル:', topicLabel:'💬 ストーリーテーマ:',
+        myLinkLabel:'ストーリー用リンク',
+        copyBtn:'コピー', shareBtn:'📲 ストーリーでシェア', storyBtn:'📸 ストーリーカードを作成',
+        questionsLabel:'質問数', answersLabel:'返答数',
+        recipientLabel:'送信先：', recipientSelf:'👤 自分宛て（テスト）', recipientFriend:'🔍 他の人へ',
+        recipientPlaceholder:'@ユーザー名またはID',
+        anonHidden:'あなたの名前と連絡先は完全に非表示っちゃ！',
+        randomLabel:'ランダム質問',
+        sendBtn:'🚀 匿名で送信する',
+        superBtn:'👑 星で応援する ⭐',
+        deliveryLabel:'⚡ メッセージはTelegramで直接届くっちゃ',
+        inboxTitle:'受信した質問',
+        inboxEmpty:'まだ質問がないっちゃ。ストーリーにリンクを貼ってね！',
+        premiumSub:'ラムの全機能を解放するっちゃ',
+        feat1:'限定ストーリースキン','feat1d':'Gold VIP・Obsidian Stealth・Sakura',
+        feat2:'VIPプロフィール','feat2d':'星バッジとラムのオーラ',
+        feat3:'全キャラクター','feat3d':'ツンデレ・カワイイ・宇宙人・魅惑',
+        feat4:'多言語 RU/EN/日本語','feat4d':'ボットがあなたの言語で話すっちゃ',
+        feat5:'ゴールドVIPフレーム','feat5d':'質問がVIPフレーム付きで届くっちゃ',
+        supportTitle:'⭐ 作者を応援する：',
+        t15name:'⚡ ラムの電撃スパーク', t15desc:'可愛いご支援', t15badge:'応援',
+        t50name:'⚡ 稲妻ボルト', t50desc:'黄金フレーム付きスーパー質問', t50badge:'スーパー質問',
+        t150name:'👑 スーパーノヴァVIP', t150desc:'1年間プレミアム：全スキン＋VIP', t150badge:'🔥 人気・85%',
+        t500name:'🌌 銀河の覇者', t500desc:'永久プレミアム＋ラムの特別メッセージ', t500badge:'💎 レジェンド',
+        copied:'✓ リンクをコピーしたっちゃ！',
+        sent:'✓ 匿名メッセージを送信したっちゃ！',
+        needText:'⚠️ メッセージを入力してね！',
+        userNotFound:'⚠️ ユーザーが見つかりませんでした',
+        personality:'🎭 キャラクター：',
+        pNames:{tsundere:'⚡ ツンデレ', kawaii:'❤️ カワイイ', alien:'🛸 宇宙人', flirty:'😉 魅惑'},
+      }
+    };
 
     const SPICY_QUESTIONS = [
       "В кого ты тайно влюблен(а) прямо сейчас? 👀",
@@ -799,86 +477,247 @@
       "Какой самый безумный поступок ты делал(а)? 🚀",
       "Ты веришь в любовь с первого взгляда? 💔",
       "Какая твоя самая странная привычка? 😂",
-      "С кем бы ты хотел(а) застрять в лифте? 🙈"
+      "С кем бы ты хотел(а) застрять в лифте? 🙈",
     ];
 
+    // State
     const currentUserId = tg?.initDataUnsafe?.user?.id || 8513097259;
-    const userName = tg?.initDataUnsafe?.user?.first_name || "Пользователь";
-    const botTag = "akilum_anon_bot";
+    const userName = tg?.initDataUnsafe?.user?.first_name || 'Рам сан!';
+    const botTag = 'akilum_anon_bot';
     const personalUrl = `https://t.me/${botTag}?start=anon_${currentUserId}`;
 
-    // Init
-    document.getElementById('user-link-text').textContent = personalUrl;
-    if (userName) {
-      document.getElementById('greeting-name').textContent = `Привет, ${userName}!`;
+    let currentLang = 'ru';
+    let currentPersonality = 'tsundere';
+    let recipientMode = 'self'; // 'self' | 'friend'
+    let friendTargetId = null;
+    let selectedTheme = 'lum';
+    let selectedPrompt = 'Напиши мне всё,\nо чём ты молчишь...';
+
+    // Auto-detect recipient from deep-link start_param (e.g. anon_8513097259)
+    const startParam = tg?.initDataUnsafe?.start_param || '';
+    let deepLinkTargetId = null;
+    if (startParam.startsWith('anon_')) {
+      deepLinkTargetId = Number(startParam.replace('anon_', ''));
+      if (deepLinkTargetId && deepLinkTargetId !== currentUserId) {
+        // Someone opened the app from someone else's link
+        recipientMode = 'friend';
+        friendTargetId = deepLinkTargetId;
+      }
     }
 
-    function triggerHaptic(type = 'medium') {
+    function t(key) { return LANGS[currentLang][key] || LANGS.ru[key] || key; }
+
+    function applyLang() {
+      const L = LANGS[currentLang];
+      document.getElementById('lang-btn').textContent = `${L.flag} ${L.code}`;
+      document.getElementById('anon-label').textContent = L.tagline;
+      document.getElementById('greeting-name').textContent = `${L.greeting} ${userName}`;
+
+      // Tabs
+      document.querySelector('#tab-share .tab-label').textContent = L.tabShare;
+      document.querySelector('#tab-ask .tab-label').textContent = L.tabAsk;
+      document.querySelector('#tab-inbox .tab-label').textContent = L.tabInbox;
+
+      // Personality chips
+      const pNames = L.pNames;
+      document.querySelectorAll('.p-chip').forEach(c => {
+        const p = c.dataset.p;
+        if (pNames[p]) c.textContent = pNames[p];
+      });
+
+      // Share tab
+      document.getElementById('lbl-style').textContent = L.styleLabel;
+      document.getElementById('lbl-topic').textContent = L.topicLabel;
+      document.getElementById('lbl-mylink').textContent = L.myLinkLabel;
+      document.getElementById('btn-copy').textContent = L.copyBtn;
+      document.getElementById('btn-share').textContent = L.shareBtn;
+      document.getElementById('btn-story').textContent = L.storyBtn;
+      document.getElementById('lbl-questions').textContent = L.questionsLabel;
+      document.getElementById('lbl-answers').textContent = L.answersLabel;
+
+      // Ask tab
+      document.getElementById('lbl-recipient').textContent = L.recipientLabel;
+      document.getElementById('rtab-self').textContent = L.recipientSelf;
+      document.getElementById('rtab-friend').textContent = L.recipientFriend;
+      document.getElementById('recipient-query').placeholder = L.recipientPlaceholder;
+      document.getElementById('lbl-anon-hidden').textContent = L.anonHidden;
+      document.getElementById('lbl-random').textContent = L.randomLabel;
+      document.getElementById('btn-send').textContent = L.sendBtn;
+      document.getElementById('btn-super').textContent = L.superBtn;
+      document.getElementById('lbl-delivery').textContent = L.deliveryLabel;
+
+      // Inbox
+      document.getElementById('lbl-inbox-title').textContent = L.inboxTitle;
+
+      // Premium
+      document.getElementById('lbl-premium-sub').textContent = L.premiumSub;
+      document.getElementById('feat1-title').textContent = L.feat1;
+      document.getElementById('feat1-desc').textContent = L.feat1d;
+      document.getElementById('feat2-title').textContent = L.feat2;
+      document.getElementById('feat2-desc').textContent = L.feat2d;
+      document.getElementById('feat3-title').textContent = L.feat3;
+      document.getElementById('feat3-desc').textContent = L.feat3d;
+      document.getElementById('feat4-title').textContent = L.feat4;
+      document.getElementById('feat4-desc').textContent = L.feat4d;
+      document.getElementById('feat5-title').textContent = L.feat5;
+      document.getElementById('feat5-desc').textContent = L.feat5d;
+      document.getElementById('lbl-support-title').textContent = L.supportTitle;
+      document.getElementById('tier15-name').textContent = L.t15name;
+      document.getElementById('tier15-desc').textContent = L.t15desc;
+      document.getElementById('tier15-badge').textContent = L.t15badge;
+      document.getElementById('tier50-name').textContent = L.t50name;
+      document.getElementById('tier50-desc').textContent = L.t50desc;
+      document.getElementById('tier50-badge').textContent = L.t50badge;
+      document.getElementById('tier150-name').textContent = L.t150name;
+      document.getElementById('tier150-desc').textContent = L.t150desc;
+      document.getElementById('tier150-badge').textContent = L.t150badge;
+      document.getElementById('tier500-name').textContent = L.t500name;
+      document.getElementById('tier500-desc').textContent = L.t500desc;
+      document.getElementById('tier500-badge').textContent = L.t500badge;
+
+      // ask textarea placeholder
+      document.getElementById('ask-textarea').placeholder = currentLang === 'ja'
+        ? '秘密や本音の質問を書いてね…誰だかバレないっちゃ！'
+        : currentLang === 'en'
+          ? 'Write a secret, confession or burning question... 100% anonymous!'
+          : 'Напиши сюда секрет, честный вопрос или признание... Получатель никогда не узнает, кто это!';
+    }
+
+    function cycleLang() {
+      triggerHaptic('light');
+      const order = ['ru','en','ja'];
+      const idx = order.indexOf(currentLang);
+      currentLang = order[(idx+1)%3];
+      applyLang();
+      // Save lang preference to bot
+      fetch(`/api/setlang?userId=${currentUserId}&lang=${currentLang}`).catch(()=>{});
+    }
+
+    // ============================
+    // Personality
+    // ============================
+    const P_GREETINGS = {
+      ru: {
+        tsundere: '⚡ «Бака, Дарлинг! Не думай, что я ради тебя!»',
+        kawaii: '❤️ «Дарлинг~! Я так ждала тебя~»',
+        alien: '🛸 «Землянин! Квантовый канал связи активен!»',
+        flirty: '😉 «Чувствуешь искры между нами?..»',
+      },
+      en: {
+        tsundere: '⚡ «Baka, Darling! It\'s not like I waited for you!»',
+        kawaii: '❤️ «Darling~! I missed you so much~»',
+        alien: '🛸 «Earthling! Quantum link active!»',
+        flirty: '😉 «Feel the sparks between us?..»',
+      },
+      ja: {
+        tsundere: '⚡ «ダーリンのバカッ！待ってなんかいないっちゃ！»',
+        kawaii: '❤️ «ダーリン〜！会いたかったっちゃ〜»',
+        alien: '🛸 «地球人よ！量子通信リンク完了っちゃ！»',
+        flirty: '😉 «二人の間にビリビリ電気が走ってるっちゃ…»',
+      }
+    };
+
+    function switchPersonality(p, btn) {
+      triggerHaptic('light');
+      currentPersonality = p;
+      document.querySelectorAll('.p-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const greet = (P_GREETINGS[currentLang] && P_GREETINGS[currentLang][p]) || P_GREETINGS.ru[p];
+      if (greet) showNotice(greet);
+      fetch(`/api/setpersonality?userId=${currentUserId}&personality=${p}`).catch(()=>{});
+    }
+
+    // ============================
+    // Recipients
+    // ============================
+    let recipientSearchTimer = null;
+
+    function switchRecipient(mode, btn) {
+      triggerHaptic('light');
+      recipientMode = mode;
+      document.querySelectorAll('.recipient-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      const wrap = document.getElementById('friend-input-wrap');
+      if (mode === 'friend') {
+        wrap.classList.add('visible');
+        document.getElementById('recipient-query').focus();
+        if (deepLinkTargetId && deepLinkTargetId !== currentUserId) {
+          document.getElementById('recipient-query').value = String(deepLinkTargetId);
+          document.getElementById('recipient-found').textContent = `✓ ID: ${deepLinkTargetId}`;
+          friendTargetId = deepLinkTargetId;
+        }
+      } else {
+        wrap.classList.remove('visible');
+        friendTargetId = null;
+        document.getElementById('recipient-found').textContent = '';
+      }
+    }
+
+    function onRecipientInput() {
+      clearTimeout(recipientSearchTimer);
+      const q = document.getElementById('recipient-query').value.trim();
+      if (!q) { document.getElementById('recipient-found').textContent = ''; friendTargetId = null; return; }
+      if (/^\d{5,}$/.test(q)) {
+        friendTargetId = Number(q);
+        document.getElementById('recipient-found').textContent = `✓ ID: ${q}`;
+        return;
+      }
+      recipientSearchTimer = setTimeout(async () => {
+        try {
+          const r = await fetch(`/api/finduser?q=${encodeURIComponent(q)}`);
+          const d = await r.json();
+          if (d.ok && d.user) {
+            friendTargetId = d.user.id;
+            document.getElementById('recipient-found').textContent = `✓ ${d.user.name}${d.user.username ? ' ' + d.user.username : ''}`;
+          } else {
+            friendTargetId = null;
+            document.getElementById('recipient-found').textContent = t('userNotFound');
+          }
+        } catch(e) { friendTargetId = null; }
+      }, 500);
+    }
+
+    // ============================
+    // Haptic & Toast
+    // ============================
+    function triggerHaptic(type='medium') {
       try {
-        if (type === 'light') tg?.HapticFeedback?.impactOccurred('light');
-        else if (type === 'heavy') tg?.HapticFeedback?.impactOccurred('heavy');
-        else if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
+        if (type==='light') tg?.HapticFeedback?.impactOccurred('light');
+        else if (type==='heavy') tg?.HapticFeedback?.impactOccurred('heavy');
+        else if (type==='success') tg?.HapticFeedback?.notificationOccurred('success');
         else tg?.HapticFeedback?.impactOccurred('medium');
-      } catch (e) {}
+      } catch(e){}
     }
 
     function showNotice(text) {
       const el = document.getElementById('toast');
       document.getElementById('toast-msg').textContent = text;
       el.classList.add('active');
-      setTimeout(() => el.classList.remove('active'), 2400);
+      setTimeout(() => el.classList.remove('active'), 2600);
     }
 
-    function copyShareLink() {
-      triggerHaptic('success');
-      navigator.clipboard.writeText(personalUrl).then(() => {
-        showNotice('✓ Ссылка скопирована в буфер!');
-      });
+    // ============================
+    // Navigation
+    // ============================
+    function switchNav(tab, btn) {
+      triggerHaptic('light');
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`view-${tab}`).classList.add('active');
+      btn.classList.add('active');
+      if (tab === 'inbox') loadInbox();
     }
 
-    function openShareTelegram() {
-      triggerHaptic('medium');
-      const caption = encodeURIComponent("Задай мне вопрос анонимно 🤫");
-      const url = `https://t.me/share/url?url=${encodeURIComponent(personalUrl)}&text=${caption}`;
-      if (tg) {
-        tg.openTelegramLink(url);
-      } else {
-        window.open(url, '_blank');
-      }
-    }
-
-    let selectedTheme = 'lum';
-    let selectedPrompt = 'Напиши мне всё,\nо чём ты молчишь...';
+    // ============================
+    // Share tab
+    // ============================
+    document.getElementById('user-link-text').textContent = personalUrl;
 
     const THEME_STYLES = {
-      lum: {
-        bg: 'linear-gradient(135deg, #00F5D4 0%, #00B894 45%, #FFD600 100%)',
-        cardBg: '#ffffff',
-        text: '#111827',
-        badge: '⚡ ask me anything',
-        name: '⚡ Lum Signature'
-      },
-      obsidian: {
-        bg: 'linear-gradient(135deg, #050608 0%, #141824 50%, #08090d 100%)',
-        cardBg: '#11141c',
-        text: '#ffffff',
-        badge: '🖤 stealth secret',
-        name: '🖤 Obsidian Stealth'
-      },
-      gold: {
-        bg: 'linear-gradient(135deg, #FFE259 0%, #FFA751 50%, #FF5722 100%)',
-        cardBg: '#121118',
-        text: '#ffffff',
-        badge: '👑 VIP Super-Question',
-        name: '👑 Royal Gold VIP'
-      },
-      sakura: {
-        bg: 'linear-gradient(135deg, #FF2A85 0%, #8A2387 50%, #00F0FF 100%)',
-        cardBg: '#ffffff',
-        text: '#111827',
-        badge: '🌸 secret story',
-        name: '🌸 Cyber Sakura'
-      }
+      lum:{bg:'linear-gradient(135deg,#00F5D4 0%,#00B894 45%,#FFD600 100%)',cardBg:'#fff',text:'#111827',badge:'⚡ ask me anything',name:'⚡ Lum Signature'},
+      obsidian:{bg:'linear-gradient(135deg,#050608 0%,#141824 50%,#08090d 100%)',cardBg:'#11141c',text:'#fff',badge:'🖤 stealth secret',name:'🖤 Obsidian Stealth'},
+      gold:{bg:'linear-gradient(135deg,#FFE259 0%,#FFA751 50%,#FF5722 100%)',cardBg:'#121118',text:'#fff',badge:'👑 VIP Super-Question',name:'👑 Royal Gold VIP'},
+      sakura:{bg:'linear-gradient(135deg,#FF2A85 0%,#8A2387 50%,#00F0FF 100%)',cardBg:'#fff',text:'#111827',badge:'🌸 secret story',name:'🌸 Cyber Sakura'},
     };
 
     function setStoryTheme(theme, btn) {
@@ -886,18 +725,11 @@
       selectedTheme = theme;
       document.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
-      const conf = THEME_STYLES[theme] || THEME_STYLES.lum;
-      document.getElementById('theme-badge-name').textContent = conf.name;
-      const preview = document.getElementById('story-preview-card');
-      const inner = document.getElementById('story-inner-card');
-      const textEl = document.getElementById('story-text-el');
-      const badgeEl = document.getElementById('story-badge-el');
-
-      preview.style.background = conf.bg;
-      inner.style.background = conf.cardBg;
-      textEl.style.color = conf.text;
-      badgeEl.innerHTML = `<span>${conf.badge.slice(0, 2)}</span> ${conf.badge.slice(2)}`;
+      const c = THEME_STYLES[theme] || THEME_STYLES.lum;
+      document.getElementById('story-preview-card').style.background = c.bg;
+      document.getElementById('story-inner-card').style.background = c.cardBg;
+      document.getElementById('story-text-el').style.color = c.text;
+      document.getElementById('story-badge-el').innerHTML = `<span>${c.badge.slice(0,2)}</span> ${c.badge.slice(2)}`;
     }
 
     function setStoryPrompt(prompt, btn) {
@@ -905,51 +737,37 @@
       selectedPrompt = prompt;
       document.querySelectorAll('.prompt-chip').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('story-text-el').innerHTML = prompt.replace(/\n/g, '<br>');
+      document.getElementById('story-text-el').innerHTML = prompt.replace(/\n/g,'<br>');
+    }
+
+    function copyShareLink() {
+      triggerHaptic('success');
+      navigator.clipboard.writeText(personalUrl).then(() => showNotice(t('copied')));
+    }
+
+    function openShareTelegram() {
+      triggerHaptic('medium');
+      const caption = encodeURIComponent('Задай мне вопрос анонимно 🤫');
+      const url = `https://t.me/share/url?url=${encodeURIComponent(personalUrl)}&text=${caption}`;
+      tg ? tg.openTelegramLink(url) : window.open(url,'_blank');
     }
 
     function generateAndSaveStory() {
       triggerHaptic('heavy');
-      if (tg) {
-        tg.close();
-      }
+      if (tg) tg.close();
       window.location.href = `https://t.me/${botTag}?start=story_${selectedTheme}_${encodeURIComponent(selectedPrompt)}`;
     }
 
-    function submitSuperQuestion() {
-      const text = document.getElementById('ask-textarea').value.trim();
-      if (text.length < 2) {
-        showNotice('⚠️ Напиши вопрос перед отправкой!');
-        triggerHaptic('light');
-        return;
-      }
-      triggerHaptic('heavy');
-      if (tg) tg.close();
-      window.location.href = `https://t.me/${botTag}?start=super_${currentUserId}_${encodeURIComponent(text)}`;
-    }
-
-    function switchNav(tab, btn) {
-      triggerHaptic('light');
-      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      
-      document.getElementById(`view-${tab}`).classList.add('active');
-      btn.classList.add('active');
-
-      if (tab === 'inbox') {
-        loadInbox();
-      }
-    }
-
+    // ============================
+    // Ask tab
+    // ============================
     function spinDice() {
       triggerHaptic('heavy');
       const dice = document.getElementById('dice-spin');
       dice.style.transform = 'rotate(360deg)';
       setTimeout(() => dice.style.transform = 'rotate(0deg)', 350);
-
-      const q = SPICY_QUESTIONS[Math.floor(Math.random() * SPICY_QUESTIONS.length)];
       const area = document.getElementById('ask-textarea');
-      area.value = q;
+      area.value = SPICY_QUESTIONS[Math.floor(Math.random()*SPICY_QUESTIONS.length)];
       handleCharCount();
     }
 
@@ -958,43 +776,77 @@
       document.getElementById('char-label').textContent = `${len} / 800`;
     }
 
+    function getTargetId() {
+      if (recipientMode === 'self') return currentUserId;
+      if (friendTargetId) return friendTargetId;
+      return null;
+    }
+
     async function submitAnonymousQuestion() {
       const text = document.getElementById('ask-textarea').value.trim();
-      if (text.length < 2) {
-        showNotice('⚠️ Напиши хотя бы пару слов!');
-        triggerHaptic('light');
-        return;
+      if (text.length < 2) { showNotice(t('needText')); triggerHaptic('light'); return; }
+
+      const targetId = getTargetId();
+      if (!targetId && recipientMode === 'friend') {
+        showNotice(t('userNotFound')); triggerHaptic('light'); return;
       }
 
       triggerHaptic('heavy');
       showNotice('🚀 Отправка...');
 
       try {
-        const res = await fetch('/api/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            senderId: currentUserId,
-            targetId: currentUserId,
-            text: text
-          })
-        });
+        const body = { senderId: currentUserId, text };
+        if (recipientMode === 'friend' && friendTargetId) {
+          body.targetId = friendTargetId;
+        } else if (recipientMode === 'friend') {
+          const q = document.getElementById('recipient-query').value.trim();
+          body.targetQuery = q;
+        } else {
+          body.targetId = currentUserId;
+        }
 
-        const data = await res.json();
-        if (data.ok) {
+        const res = await fetch('/api/send', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        });
+        const d = await res.json();
+        if (d.ok) {
           document.getElementById('ask-textarea').value = '';
           handleCharCount();
-          showNotice('✓ Вопрос доставлен анонимно!');
+          showNotice(t('sent'));
           triggerHaptic('success');
+        } else if (d.error === 'user_not_found') {
+          showNotice(t('userNotFound'));
         } else {
           showNotice('Ошибка отправки');
         }
-      } catch (err) {
-        showNotice('✓ Вопрос доставлен анонимно!');
+      } catch(err) {
+        showNotice(t('sent')); // offline fallback
       }
     }
 
-    // Загрузка статистики и входящих
+    // ============================
+    // Premium / Stars
+    // ============================
+    function buyStars(amount) {
+      triggerHaptic('heavy');
+      if (tg) tg.close();
+      window.location.href = `https://t.me/${botTag}?start=donate_${amount}`;
+    }
+
+    function showDonateModal() {
+      triggerHaptic('medium');
+      switchNav('premium', document.getElementById('tab-premium'));
+    }
+
+    // ============================
+    // Inbox
+    // ============================
+    function escapeHtml(t) {
+      return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
     function loadInbox() {
       fetch(`/api/user?id=${currentUserId}`)
         .then(r => r.json())
@@ -1003,33 +855,37 @@
             document.getElementById('metric-questions').textContent = data.user.questionsReceived || 0;
             document.getElementById('metric-answers').textContent = data.user.repliesSent || 0;
             document.getElementById('metric-stars').textContent = data.user.starsReceived || 0;
+            if (data.user.personality && data.user.personality !== currentPersonality) {
+              currentPersonality = data.user.personality;
+              document.querySelectorAll('.p-chip').forEach(c => {
+                c.classList.toggle('active', c.dataset.p === currentPersonality);
+              });
+            }
+            if (data.user.language && LANGS[data.user.language] && data.user.language !== currentLang) {
+              currentLang = data.user.language;
+              applyLang();
+            }
           }
-
           const container = document.getElementById('inbox-container');
           if (data.questions && data.questions.length > 0) {
             container.innerHTML = data.questions.map(q => {
               const d = new Date(q.createdAt);
-              const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-              const superBadge = q.isSuper ? `<span style="color: #FFD700; font-weight: 800;">👑 СУПЕР (+${q.stars || 50} ⭐)</span> • ` : '';
-              const reactionBadge = q.reaction ? `<span style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 8px;">${q.reaction}</span> • ` : '';
+              const time = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+              const vip = q.isSuper ? `<span style="color:#FFD700;font-weight:800;">👑 VIP (+${q.stars||50}⭐)</span> • ` : '';
               return `
-                <div class="inbox-item" style="${q.isSuper ? 'border-color: rgba(255, 215, 0, 0.45); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.15);' : ''}">
-                  <div class="inbox-time">🕒 ${timeStr} • ${superBadge}${reactionBadge}Анонимный вопрос</div>
+                <div class="inbox-item" style="${q.isSuper?'border-color:rgba(255,215,0,0.4);box-shadow:0 8px 28px rgba(255,215,0,0.12);':''}">
+                  <div class="inbox-time">🕒 ${time} • ${vip}Анонимный вопрос</div>
                   <div class="inbox-text">«${escapeHtml(q.text)}»</div>
                   <div class="inbox-actions">
                     <button class="pill-btn" onclick="openStoryForQ('${q.id}')">📸 В Сторис</button>
                     <button class="pill-btn" onclick="answerQ('${q.id}')">💬 Ответить</button>
                   </div>
-                </div>
-              `;
+                </div>`;
             }).join('');
+          } else {
+            container.innerHTML = `<div class="inbox-item" style="text-align:center;color:var(--text-ter);padding:28px 16px;">${t('inboxEmpty')}</div>`;
           }
-        })
-        .catch(() => {});
-    }
-
-    function escapeHtml(t) {
-      return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }).catch(()=>{});
     }
 
     function openStoryForQ(qId) {
@@ -1044,8 +900,15 @@
       window.location.href = `https://t.me/${botTag}?start=reply_${qId}`;
     }
 
-    // Auto-load on open
+    // Init
+    applyLang();
     loadInbox();
+
+    // If opened from a deep link targeting someone else — switch to Ask tab and pre-fill friend mode
+    if (deepLinkTargetId && deepLinkTargetId !== currentUserId) {
+      switchNav('ask', document.getElementById('tab-ask'));
+      switchRecipient('friend', document.getElementById('rtab-friend'));
+    }
   </script>
 </body>
 </html>
