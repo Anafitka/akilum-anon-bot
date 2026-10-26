@@ -117,15 +117,15 @@ async function initBotProfile() {
     await bot.api.setMyShortDescription(
       "Анонимные вопросы и секреты для твоих Stories 🤫⚡"
     );
-    // Компактная кнопка Mini App (версия v=5 для мгновенного обновления кэша)
+    // Компактная кнопка Mini App (версия v=6 для мгновенного обновления кэша)
     await bot.api.setChatMenuButton({
       menu_button: {
         type: "web_app",
         text: "⚡ App",
-        web_app: { url: "https://akilum-anon-bot.onrender.com?v=5" }
+        web_app: { url: "https://akilum-anon-bot.onrender.com?v=6" }
       }
     });
-    console.log("✓ Профиль и компактная кнопка Mini App (v=5) настроены");
+    console.log("✓ Профиль и компактная кнопка Mini App (v=6) настроены");
   } catch (e) {
     console.warn("Предупреждение профиля:", e.message);
   }
@@ -308,7 +308,7 @@ bot.command("start", async (ctx) => {
 
   if (userId === OWNER_ID || payload === "menu") {
     const kb = new InlineKeyboard()
-      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com?v=5")
+      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com?v=6")
       .row()
       .url("🔗 Поделиться", getShareUrl(userId))
       .row()
@@ -336,7 +336,7 @@ bot.command("start", async (ctx) => {
   });
 
   const strangerKb = new InlineKeyboard()
-    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com?v=5")
+    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com?v=6")
     .row()
     .text("🎲 Случайный вопрос", `action:rand_${OWNER_ID}`)
     .text("🔗 Создать свою ссылку", "action:my_own_link")
@@ -357,7 +357,7 @@ bot.command("start", async (ctx) => {
 bot.command("app", async (ctx) => {
   const kb = new InlineKeyboard().webApp(
     "⚡ Открыть Akilum Mini App",
-    "https://akilum-anon-bot.onrender.com?v=5"
+    "https://akilum-anon-bot.onrender.com?v=6"
   );
   await ctx.reply(
     "✨ <b>Akilum Mini App</b>\n\n" +
@@ -1308,6 +1308,134 @@ const server = http.createServer((req, res) => {
     if (uId) setUserPersonality(uId, pers);
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify({ ok: true, personality: pers }));
+  }
+
+  // 3e. API: создание официальной ссылки оплаты Telegram Stars (для tg.openInvoice прямо внутри Mini App)
+  if (url.pathname === "/api/create-invoice" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const stars = Number(data.stars) || 50;
+        const userId = Number(data.userId) || OWNER_ID;
+        const text = String(data.text || "").trim();
+        const targetId = Number(data.targetId) || OWNER_ID;
+        const tier = STAR_TIERS[stars] || STAR_TIERS[50];
+
+        let title = tier.name.ru;
+        let desc = tier.desc.ru;
+        let payloadObj = { type: "donate", tier: tier.id, stars };
+
+        if (text && data.type === "super") {
+          const targetUser = getUser(targetId) || { name: "пользователя" };
+          title = `👑 VIP Супер-вопрос (${stars} ⭐)`;
+          desc = `Анонимный VIP-вопрос для ${targetUser.name} с золотой рамкой!`;
+          payloadObj = { t: targetId, q: text, stars };
+        }
+
+        const invoiceLink = await bot.api.createInvoiceLink(
+          title,
+          desc,
+          JSON.stringify(payloadObj),
+          "",
+          "XTR",
+          [{ label: `${title}`, amount: stars }]
+        );
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ ok: true, invoiceLink }));
+      } catch (e) {
+        console.error("Create invoice link error:", e.message);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ ok: false, error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // 3f. API: быстрый ответ на вопрос прямо из Mini App (без закрытия приложения)
+  if (url.pathname === "/api/reply" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const qId = String(data.questionId || "");
+        const replyText = String(data.replyText || "").trim();
+        const q = getQuestion(qId);
+
+        if (q && replyText.length >= 1) {
+          setQuestionReply(q.id, replyText);
+          const askAgainKb = createAnswerKeyboard(q);
+          try {
+            const sentAnswer = await bot.api.sendMessage(
+              q.senderId,
+              `💬 <b>Ответ на твой анонимный вопрос:</b>\n\n` +
+              `Вопрос:\n` +
+              `<blockquote>${escapeHtml(q.text)}</blockquote>\n\n` +
+              `Ответ:\n` +
+              `<blockquote>${escapeHtml(replyText)}</blockquote>\n\n` +
+              `<i>💡 Свайпни это сообщение вправо, чтобы ответить ещё!</i>`,
+              { parse_mode: "HTML", reply_markup: askAgainKb }
+            );
+            linkMessageToQuestion(sentAnswer.message_id, q.senderId, q.id, "answer");
+          } catch (e) {
+            console.warn("Ошибка доставки ответа из Mini App:", e.message);
+          }
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          return res.end(JSON.stringify({ ok: true }));
+        }
+      } catch (e) {
+        console.error("API reply error:", e.message);
+      }
+      res.writeHead(400, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ ok: false }));
+    });
+    return;
+  }
+
+  // 3g. API: мгновенная отправка карточки Сторис в чат с ботом (без вылета из Mini App)
+  if (url.pathname === "/api/story-card" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const data = JSON.parse(body);
+        const userId = Number(data.userId) || OWNER_ID;
+        const theme = String(data.theme || "lum");
+        const qId = data.questionId ? String(data.questionId) : null;
+        const prompt = String(data.prompt || "");
+        const user = getOrCreateUser(userId);
+        const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
+
+        if (qId) {
+          const q = getQuestion(qId);
+          if (q) {
+            const pngBuffer = generateQuestionCard(q.text, user.name, theme, q.isSuper);
+            await bot.api.sendPhoto(userId, new InputFile(pngBuffer, `story_${qId}.png`), {
+              caption: `📸 <b>Готовая карточка с вопросом для Сторис!</b>\n\nСохрани картинку, выложи в Сторис и прикрепи свою ссылку:\n<code>${myLink}</code>`,
+              parse_mode: "HTML",
+            });
+          }
+        } else {
+          const pngBuffer = generatePromoCard(user.name, botUsername, theme, prompt);
+          await bot.api.sendPhoto(userId, new InputFile(pngBuffer, `story_${theme}.png`), {
+            caption: `📸 <b>Готовая картинка для твоих Сторис!</b>\n\nВыложи её и прикрепи стикер-ссылку:\n<code>${myLink}</code>`,
+            parse_mode: "HTML",
+          });
+        }
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        console.error("API story card error:", e.message);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ ok: false }));
+      }
+    });
+    return;
   }
 
   // 4. Главная страница (Mini App)

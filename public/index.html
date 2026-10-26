@@ -3,911 +3,1706 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>AKILUM • Anonymous Secrets</title>
+  <title>AKILUM • Анонимные вопросы</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07090e;
-      --surface: rgba(255,255,255,0.05);
-      --surface-elevated: rgba(255,255,255,0.08);
-      --border: rgba(255,255,255,0.1);
-      --border-glow: rgba(0,245,212,0.35);
+      --bg: #0b101b;
+      --card: #151e30;
+      --card-light: #1c2840;
+      --border: rgba(255, 255, 255, 0.14);
       --primary: #00F5D4;
-      --primary-grad: linear-gradient(135deg,#00F5D4 0%,#00C896 50%,#FFD600 100%);
-      --accent-grad: linear-gradient(135deg,#00F5D4 0%,#00E5FF 50%,#FFD600 100%);
-      --gold-grad: linear-gradient(135deg,#FFE259 0%,#FFA751 50%,#FF5722 100%);
+      --primary-dark: #00b89c;
+      --gold: #FFD000;
       --text: #ffffff;
-      --text-sec: #9aa8bd;
-      --text-ter: #54657d;
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --shadow-glow: 0 16px 40px -10px rgba(0,245,212,0.35);
+      --text-muted: #9eb0c9;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
     }
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
-    body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:90px;-webkit-font-smoothing:antialiased;}
-    .ambient-sphere-1{position:fixed;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(0,245,212,0.22) 0%,rgba(0,200,150,0.08) 50%,transparent 75%);top:-120px;right:-80px;pointer-events:none;z-index:0;filter:blur(40px);}
-    .ambient-sphere-2{position:fixed;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,0,0.14) 0%,rgba(0,229,255,0.08) 50%,transparent 75%);bottom:60px;left:-80px;pointer-events:none;z-index:0;filter:blur(40px);}
-    .app-wrapper{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:14px 16px;}
 
-    /* Header */
-    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-    .mascot-profile{display:flex;align-items:center;gap:10px;}
-    .mascot-avatar{width:48px;height:48px;border-radius:18px;background:var(--primary-grad);padding:2px;box-shadow:0 8px 24px rgba(0,245,212,0.35);position:relative;flex-shrink:0;}
-    .mascot-avatar img{width:100%;height:100%;border-radius:16px;object-fit:cover;display:block;}
-    .live-dot{position:absolute;bottom:-3px;right:-3px;background:#07090e;border:1.5px solid #00F5D4;width:11px;height:11px;border-radius:50%;box-shadow:0 0 8px #00F5D4;}
-    .brand-title{font-size:20px;font-weight:900;letter-spacing:-0.02em;background:linear-gradient(135deg,#fff 40%,#70FFF1 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .brand-sub{font-size:11px;color:var(--text-sec);font-weight:600;margin-top:1px;}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    /* Header right controls */
-    .header-controls{display:flex;align-items:center;gap:8px;}
-    .lang-toggle{font-size:11px;font-weight:800;color:var(--primary);background:rgba(0,245,212,0.1);border:1px solid rgba(0,245,212,0.2);padding:5px 10px;border-radius:20px;cursor:pointer;letter-spacing:0.3px;}
-    .mode-pill{font-size:10px;font-weight:800;letter-spacing:0.5px;color:#00F5D4;background:rgba(0,245,212,0.08);border:1px solid rgba(0,245,212,0.18);padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
-    .mode-pill-dot{width:5px;height:5px;border-radius:50%;background:#00F5D4;box-shadow:0 0 6px #00F5D4;}
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 96px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    /* Personality row */
-    .personality-row{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
-    .personality-row::-webkit-scrollbar{display:none;}
-    .p-chip{flex-shrink:0;padding:6px 14px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);border-radius:20px;font-size:12px;font-weight:800;color:var(--text-sec);cursor:pointer;transition:all 0.18s ease;white-space:nowrap;}
-    .p-chip.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.4);color:#00F5D4;}
-    .p-chip:active{transform:scale(0.95);}
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 14px 16px;
+    }
 
-    /* Tabs */
-    .nav-tabs{display:flex;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:18px;padding:4px;margin-bottom:16px;backdrop-filter:blur(20px);}
-    .tab-btn{flex:1;padding:9px 6px;border:none;background:transparent;color:var(--text-sec);font-family:inherit;font-size:12px;font-weight:800;border-radius:14px;cursor:pointer;transition:all 0.2s cubic-bezier(0.16,1,0.3,1);display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;}
-    .tab-btn.active{background:linear-gradient(135deg,#00F5D4 0%,#00D29E 100%);color:#05090e;box-shadow:0 4px 16px rgba(0,245,212,0.3);transform:translateY(-1px);}
-    .tab-btn.premium-tab.active{background:linear-gradient(135deg,#FFE259 0%,#FFA751 100%);color:#1a0a00;}
+    /* Top Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
 
-    .tab-view{display:none;}
-    .tab-view.active{display:block;animation:tabFadeIn 0.22s ease-out;}
-    @keyframes tabFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-    /* Glass Cards */
-    .glass-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);margin-bottom:14px;box-shadow:0 20px 40px rgba(0,0,0,0.45);position:relative;overflow:hidden;}
+    .avatar-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      padding: 2px;
+      background: linear-gradient(135deg, #00F5D4, #FFD000);
+      flex-shrink: 0;
+    }
 
-    /* Story preview */
-    .story-hero-preview{background:linear-gradient(135deg,#00F5D4 0%,#00B894 45%,#FFD600 100%);border-radius:24px;padding:24px 20px;text-align:center;margin-bottom:16px;box-shadow:0 20px 50px -10px rgba(0,245,212,0.4);transition:all 0.3s ease;}
-    .story-card-inner{background:#fff;border-radius:18px;padding:22px 18px;box-shadow:0 16px 36px rgba(0,0,0,0.25);}
-    .preview-pill{display:inline-flex;align-items:center;gap:6px;background:#f3f4f6;color:#4b5563;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:800;margin-bottom:12px;}
-    .preview-text{font-size:18px;font-weight:900;color:#111827;line-height:1.35;margin-bottom:14px;word-break:break-word;}
-    .preview-watermark{font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:0.5px;}
+    .avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+      display: block;
+    }
 
-    /* Theme & prompt row */
-    .theme-picker-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
-    .theme-picker-row::-webkit-scrollbar{display:none;}
-    .theme-pill{flex-shrink:0;padding:6px 14px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);border-radius:20px;font-size:12px;font-weight:800;color:var(--text-sec);cursor:pointer;transition:all 0.15s ease;white-space:nowrap;}
-    .theme-pill.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.4);color:#00F5D4;}
-    .prompt-chips-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
-    .prompt-chips-row::-webkit-scrollbar{display:none;}
-    .prompt-chip{flex-shrink:0;padding:6px 12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);border-radius:14px;font-size:11px;font-weight:800;color:var(--text-sec);cursor:pointer;white-space:nowrap;transition:all 0.15s ease;}
-    .prompt-chip.active{border-color:rgba(0,245,212,0.3);color:var(--primary);background:rgba(0,245,212,0.08);}
+    .brand-name {
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+    }
 
-    /* Link widget */
-    .link-widget{background:rgba(0,0,0,0.4);border:1px dashed rgba(255,255,255,0.16);border-radius:var(--radius-md);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
-    .link-value{font-size:12px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .brand-status {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 2px;
+      cursor: pointer;
+    }
 
-    /* Buttons */
-    .btn{width:100%;padding:14px 18px;border-radius:16px;font-family:inherit;font-size:14px;font-weight:800;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.18s ease;letter-spacing:-0.01em;margin-bottom:8px;}
-    .btn:last-child{margin-bottom:0;}
-    .btn:active{transform:scale(0.97);}
-    .btn-gradient{background:linear-gradient(135deg,#00F5D4 0%,#00B894 100%);color:#05090e;box-shadow:0 8px 24px rgba(0,245,212,0.3);}
-    .btn-secondary{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--text);}
-    .btn-copy{padding:6px 12px!important;width:auto!important;font-size:11px!important;border-radius:10px!important;margin-bottom:0!important;background:rgba(0,245,212,0.15);color:#00F5D4;border:1px solid rgba(0,245,212,0.3);}
+    /* Language Pills */
+    .lang-bar {
+      display: flex;
+      gap: 4px;
+      background: #0b101b;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
 
-    /* Metrics */
-    .metrics-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0;}
-    .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:center;}
-    .metric-value{font-size:22px;font-weight:900;background:var(--primary-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;}
-    .metric-desc{font-size:10px;color:var(--text-sec);font-weight:700;}
+    .lang-pill {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
-    /* Ask tab — input */
-    .input-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:18px;margin-bottom:12px;}
-    .recipient-box{background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-md);padding:12px;margin-bottom:12px;}
-    .recipient-label{font-size:10px;font-weight:800;color:var(--text-ter);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
-    .recipient-tabs{display:flex;gap:6px;margin-bottom:10px;}
-    .recipient-tab{flex:1;padding:7px 10px;border-radius:10px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-sec);cursor:pointer;text-align:center;transition:all 0.15s ease;}
-    .recipient-tab.active{background:rgba(0,245,212,0.15);border-color:rgba(0,245,212,0.35);color:var(--primary);}
-    .recipient-input-wrap{display:none;}
-    .recipient-input-wrap.visible{display:block;}
-    .recipient-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.14);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:13px;font-weight:700;color:#fff;outline:none;transition:border-color 0.15s ease;}
-    .recipient-input:focus{border-color:rgba(0,245,212,0.4);}
-    .recipient-input::placeholder{color:var(--text-ter);}
-    .recipient-found{font-size:11px;color:#00F5D4;font-weight:700;margin-top:5px;min-height:16px;}
-    .textarea-field{width:100%;background:transparent;border:none;outline:none;font-family:inherit;font-size:14px;font-weight:600;color:#fff;resize:none;min-height:100px;line-height:1.5;padding:0;}
-    .textarea-field::placeholder{color:var(--text-ter);}
-    .input-bottom-bar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);}
-    .dice-action-btn{background:none;border:none;color:var(--text-sec);font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0;}
-    .dice-icon{font-size:16px;display:inline-block;transition:transform 0.35s ease;}
-    .char-limit{font-size:11px;font-weight:700;color:var(--text-ter);}
+    .lang-pill.active {
+      background: var(--primary);
+      color: #061018;
+    }
 
-    /* Inbox */
-    .inbox-list{display:flex;flex-direction:column;gap:10px;}
-    .inbox-item{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;}
-    .inbox-time{font-size:10px;color:var(--text-ter);font-weight:700;margin-bottom:6px;}
-    .inbox-text{font-size:14px;font-weight:700;color:#fff;line-height:1.4;margin-bottom:10px;}
-    .inbox-actions{display:flex;gap:6px;}
-    .pill-btn{flex:1;padding:7px 10px;border-radius:10px;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
-    .pill-btn:active{background:rgba(255,255,255,0.12);}
+    /* Speech Bubble from Lum */
+    .lum-speech {
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.14) 0%, rgba(255, 208, 0, 0.08) 100%);
+      border: 1px solid rgba(0, 245, 212, 0.35);
+      border-radius: 18px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
 
-    /* Premium section */
-    .premium-hero{background:linear-gradient(135deg,#FFE259 0%,#FFA751 60%,#FF5722 100%);border-radius:24px;padding:24px 20px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden;}
-    .premium-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.1);pointer-events:none;}
-    .premium-hero-title{font-size:26px;font-weight:900;color:#1a0800;letter-spacing:-0.03em;margin-bottom:4px;}
-    .premium-hero-sub{font-size:13px;font-weight:700;color:rgba(26,8,0,0.7);}
-    .feature-list{margin-bottom:14px;}
-    .feature-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
-    .feature-item:last-child{border-bottom:none;}
-    .feature-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
-    .feature-text-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;}
-    .feature-text-desc{font-size:11px;color:var(--text-sec);font-weight:600;line-height:1.4;}
-    .tier-card{border-radius:16px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all 0.18s ease;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;}
-    .tier-card:active{transform:scale(0.98);}
-    .tier-card.t15{background:rgba(0,245,212,0.08);border:1px solid rgba(0,245,212,0.2);}
-    .tier-card.t50{background:rgba(0,200,150,0.1);border:1px solid rgba(0,200,150,0.3);}
-    .tier-card.t150{background:linear-gradient(135deg,rgba(255,226,89,0.15) 0%,rgba(255,167,81,0.1) 100%);border:1px solid rgba(255,215,0,0.4);}
-    .tier-card.t500{background:linear-gradient(135deg,rgba(139,92,246,0.2) 0%,rgba(59,130,246,0.1) 100%);border:1px solid rgba(139,92,246,0.45);}
-    .tier-name{font-size:13px;font-weight:800;color:#fff;}
-    .tier-desc{font-size:11px;color:var(--text-sec);font-weight:600;margin-top:2px;max-width:200px;}
-    .tier-badge{font-size:10px;font-weight:900;padding:3px 8px;border-radius:10px;white-space:nowrap;}
-    .tier-card.t150 .tier-badge{background:rgba(255,215,0,0.2);color:#FFD700;border:1px solid rgba(255,215,0,0.35);}
-    .tier-card.t500 .tier-badge{background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid rgba(139,92,246,0.3);}
-    .tier-card.t15 .tier-badge,.tier-card.t50 .tier-badge{background:rgba(0,245,212,0.12);color:#00F5D4;border:1px solid rgba(0,245,212,0.25);}
-    .tier-stars{font-size:16px;font-weight:900;color:#FFD700;}
+    .lum-speech-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #e6fffb;
+      line-height: 1.35;
+    }
+
+    .lum-change-btn {
+      flex-shrink: 0;
+      background: rgba(0, 245, 212, 0.2);
+      border: 1px solid rgba(0, 245, 212, 0.45);
+      color: var(--primary);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 7px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Cards & Step Blocks */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .step-badge {
+      display: inline-block;
+      background: rgba(0, 245, 212, 0.15);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    /* Link Display Box */
+    .link-box {
+      background: #090d16;
+      border: 1.5px solid rgba(0, 245, 212, 0.35);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      word-break: break-all;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    /* Primary & Action Buttons */
+    .btn {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 16px;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease;
+      margin-bottom: 10px;
+    }
+
+    .btn:last-child {
+      margin-bottom: 0;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00F5D4 0%, #00C49A 100%);
+      color: #041210;
+      box-shadow: 0 6px 20px rgba(0, 245, 212, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--card-light);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #FFE033 0%, #FFA000 100%);
+      color: #1c0f00;
+      box-shadow: 0 6px 20px rgba(255, 200, 0, 0.3);
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn-row .btn {
+      margin-bottom: 0;
+      font-size: 14px;
+      padding: 13px 12px;
+    }
+
+    /* Story Card Preview */
+    .story-preview {
+      background: linear-gradient(135deg, #00F5D4 0%, #00B894 50%, #FFD000 100%);
+      border-radius: 20px;
+      padding: 20px 16px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .story-inner {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 18px 14px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .story-tag {
+      display: inline-block;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .story-question {
+      font-size: 17px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .story-sub {
+      font-size: 10px;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    /* Selector Grids */
+    .label-sm {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .choice-btn {
+      background: #0d1422;
+      border: 1.5px solid var(--border);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 11px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .choice-btn.active {
+      border-color: var(--primary);
+      background: rgba(0, 245, 212, 0.15);
+      color: var(--primary);
+    }
+
+    /* Stats Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 8px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Recipient Selector & Inputs */
+    .seg-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #0b101b;
+      padding: 5px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 11px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .seg-btn.active {
+      background: var(--primary);
+      color: #051210;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .input-box {
+      width: 100%;
+      background: #090d16;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      outline: none;
+    }
+
+    .input-box:focus {
+      border-color: var(--primary);
+    }
+
+    .input-box::placeholder {
+      color: #637590;
+    }
+
+    .find-btn {
+      background: var(--primary);
+      color: #051210;
+      border: none;
+      border-radius: 14px;
+      padding: 0 16px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .status-banner {
+      margin-top: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .status-banner.ok {
+      display: block;
+      background: rgba(0, 245, 212, 0.14);
+      border: 1px solid rgba(0, 245, 212, 0.4);
+      color: var(--primary);
+    }
+
+    .status-banner.err {
+      display: block;
+      background: rgba(255, 82, 82, 0.15);
+      border: 1px solid rgba(255, 82, 82, 0.4);
+      color: #ff7b7b;
+    }
+
+    .textarea-box {
+      width: 100%;
+      min-height: 120px;
+      background: #090d16;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border-radius: 16px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      resize: none;
+      outline: none;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .textarea-box:focus {
+      border-color: var(--primary);
+    }
+
+    .textarea-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .dice-btn {
+      background: var(--card-light);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Inbox Cards */
+    .q-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .q-card.vip {
+      border: 1.5px solid var(--gold);
+      background: linear-gradient(135deg, rgba(255, 208, 0, 0.1) 0%, var(--card) 100%);
+    }
+
+    .q-meta {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .q-body {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      background: #0b101b;
+      padding: 12px 14px;
+      border-radius: 12px;
+    }
+
+    .q-reply-done {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(0, 245, 212, 0.1);
+      padding: 9px 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .inline-reply-box {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .inline-reply-box.open {
+      display: block;
+    }
+
+    /* Personality Grid */
+    .pers-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .pers-card {
+      background: #0b101b;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: left;
+      position: relative;
+    }
+
+    .pers-card.active {
+      border-color: var(--primary);
+      background: rgba(0, 245, 212, 0.12);
+    }
+
+    .pers-icon {
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .pers-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .pers-quote {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    .pers-check {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--primary);
+      color: #041210;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .pers-card.active .pers-check {
+      display: inline-block;
+    }
+
+    /* Premium & Stars Tiers */
+    .vip-banner {
+      background: linear-gradient(135deg, #FFE033 0%, #FF9900 100%);
+      color: #1a0d00;
+      border-radius: 20px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+    }
+
+    .vip-banner h2 {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .vip-banner p {
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+
+    .tier-item {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .tier-item.popular {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, rgba(255, 208, 0, 0.14) 0%, var(--card) 100%);
+    }
+
+    .tier-info h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+
+    .tier-info p {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .tier-buy-btn {
+      background: linear-gradient(135deg, #FFE033 0%, #FFA000 100%);
+      color: #1c0f00;
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(255, 200, 0, 0.25);
+    }
+
+    .tier-buy-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 22, 36, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      z-index: 1000;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .nav-item {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .nav-item .nav-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .nav-item .nav-text {
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+      background: rgba(0, 245, 212, 0.12);
+    }
+
+    .nav-item.vip-nav.active {
+      color: var(--gold);
+      background: rgba(255, 208, 0, 0.14);
+    }
+
+    /* Views */
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     /* Toast */
-    .toast-pill{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-90px);background:rgba(10,16,24,0.96);border:1px solid var(--primary);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:800;box-shadow:0 16px 40px rgba(0,0,0,0.6);transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);z-index:9999;display:flex;align-items:center;gap:8px;white-space:nowrap;}
-    .toast-pill.active{transform:translateX(-50%) translateY(0);}
-    .section-label{font-size:10px;font-weight:800;color:var(--text-ter);letter-spacing:0.7px;text-transform:uppercase;margin-bottom:8px;}
+    .toast {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #00F5D4;
+      color: #041210;
+      padding: 12px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
-  <div class="ambient-sphere-1"></div>
-  <div class="ambient-sphere-2"></div>
-  <div id="toast" class="toast-pill"><span id="toast-msg">✓ Готово!</span></div>
 
-  <div class="app-wrapper">
-    <!-- Header -->
-    <header class="top-bar">
-      <div class="mascot-profile">
-        <div class="mascot-avatar">
+  <div id="toast" class="toast">✓ Готово!</div>
+
+  <div class="container">
+    <!-- Шапка с аватаркой Лам и переключением языка -->
+    <header class="header">
+      <div class="brand-left">
+        <div class="avatar-wrap">
           <img src="/avatar.png" alt="Lum">
-          <div class="live-dot"></div>
         </div>
         <div>
-          <div class="brand-title">AKILUM</div>
-          <div class="brand-sub" id="greeting-name">Анонимные вопросы</div>
+          <div class="brand-name">AKILUM</div>
+          <div class="brand-status" id="header-pers-badge" onclick="openTab('premium')">⚡ Дерзкая Лам ▾</div>
         </div>
       </div>
-      <div class="header-controls">
-        <button class="lang-toggle" onclick="cycleLang()" id="lang-btn">🇷🇺 RU</button>
-        <div class="mode-pill"><div class="mode-pill-dot"></div><span id="anon-label">АНОНИМНО</span></div>
+
+      <div class="lang-bar">
+        <button class="lang-pill active" id="lang-ru" onclick="setLang('ru')">RU</button>
+        <button class="lang-pill" id="lang-en" onclick="setLang('en')">EN</button>
+        <button class="lang-pill" id="lang-ja" onclick="setLang('ja')">JP</button>
       </div>
     </header>
 
-    <!-- Personality switcher -->
-    <div class="personality-row" id="personality-row">
-      <button class="p-chip active" data-p="tsundere" onclick="switchPersonality('tsundere',this)">⚡ Дерзкая</button>
-      <button class="p-chip" data-p="kawaii" onclick="switchPersonality('kawaii',this)">❤️ Милая</button>
-      <button class="p-chip" data-p="alien" onclick="switchPersonality('alien',this)">🛸 Пришелец</button>
-      <button class="p-chip" data-p="flirty" onclick="switchPersonality('flirty',this)">😉 Флирт</button>
+    <!-- Живая фраза Лам + быстрая кнопка смены характера -->
+    <div class="lum-speech">
+      <div class="lum-speech-text" id="lum-greeting-box">
+        ⚡ «Бака, Дарлинг! Скопируй ссылку и выложи в Сторис, чтобы получать секреты!»
+      </div>
+      <button class="lum-change-btn" id="btn-change-pers" onclick="openTab('premium')">🎭 Характер</button>
     </div>
 
-    <!-- Tabs -->
-    <nav class="nav-tabs">
-      <button class="tab-btn active" onclick="switchNav('share',this)" id="tab-share">📲 <span class="tab-label">Поделиться</span></button>
-      <button class="tab-btn" onclick="switchNav('ask',this)" id="tab-ask">✍️ <span class="tab-label">Написать</span></button>
-      <button class="tab-btn" onclick="switchNav('inbox',this)" id="tab-inbox">💌 <span class="tab-label">Входящие</span></button>
-      <button class="tab-btn premium-tab" onclick="switchNav('premium',this)" id="tab-premium">👑</button>
-    </nav>
+    <!-- ==========================================
+         ВКЛАДКА 1: МОЯ ССЫЛКА И СТОРИС
+         ========================================== -->
+    <section id="view-share" class="view active">
+      <!-- Шаг 1: Личная ссылка -->
+      <div class="card">
+        <span class="step-badge" id="t-step1">ШАГ 1 • ТВОЯ ССЫЛКА</span>
+        <div class="card-title" id="t-link-title">Получай анонимные вопросы</div>
+        <div class="card-desc" id="t-link-desc">Скопируй свою ссылку и добавь её в Instagram или Telegram Stories:</div>
 
-    <!-- TAB 1: ПОДЕЛИТЬСЯ -->
-    <main id="view-share" class="tab-view active">
-      <div class="section-label" id="lbl-style">🎨 СТИЛЬ КАРТОЧКИ:</div>
-      <div class="theme-picker-row" style="margin-bottom:14px;">
-        <button class="theme-pill active" onclick="setStoryTheme('lum',this)">⚡ Lum</button>
-        <button class="theme-pill" onclick="setStoryTheme('obsidian',this)">🖤 Stealth</button>
-        <button class="theme-pill" onclick="setStoryTheme('gold',this)">👑 Gold VIP</button>
-        <button class="theme-pill" onclick="setStoryTheme('sakura',this)">🌸 Sakura</button>
-      </div>
+        <div class="link-box" id="my-link-box">t.me/akilum_anon_bot?start=anon_...</div>
 
-      <div id="story-preview-card" class="story-hero-preview">
-        <div id="story-inner-card" class="story-card-inner">
-          <div id="story-badge-el" class="preview-pill"><span>⚡</span> ask me anything</div>
-          <div id="story-text-el" class="preview-text">Напиши мне всё,<br>о чём ты молчишь...</div>
-          <div class="preview-watermark">🤫 100% анонимно • @akilum_anon_bot</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="copyMyLink()" id="t-btn-copy">📋 Скопировать</button>
+          <button class="btn btn-secondary" onclick="shareMyLink()" id="t-btn-share">📲 Поделиться</button>
         </div>
       </div>
 
-      <div class="section-label" id="lbl-topic" style="margin-bottom:8px;">💬 ТЕМА ДЛЯ СТОРИС:</div>
-      <div class="prompt-chips-row" style="margin-bottom:14px;">
-        <button class="prompt-chip active" onclick="setStoryPrompt('Напиши мне всё,\nо чём ты молчишь...',this)">Напиши мне всё...</button>
-        <button class="prompt-chip" onclick="setStoryPrompt('Угадай, кто мне\nсейчас нравится? 🤫',this)">Угадай кто нравится 🤫</button>
-        <button class="prompt-chip" onclick="setStoryPrompt('Оцени мой вайб\nот 1 до 10 🔥',this)">Оцени мой вайб 🔥</button>
-        <button class="prompt-chip" onclick="setStoryPrompt('Задай самый смелый\nвопрос про нас 👀',this)">Смелый вопрос 👀</button>
-      </div>
+      <!-- Шаг 2: Картинка для Сторис -->
+      <div class="card">
+        <span class="step-badge" id="t-step2">ШАГ 2 • КАРТИНКА ДЛЯ СТОРИС</span>
+        <div class="card-title" id="t-story-title">Создай красивую Сторис</div>
+        <div class="card-desc" id="t-story-desc">Выбери цвет и надпись — бот мгновенно пришлёт готовую картинку в чат:</div>
 
-      <div class="glass-card" style="padding:16px;">
-        <div class="section-label" id="lbl-mylink">ТВОЯ ССЫЛКА ДЛЯ СТОРИС</div>
-        <div class="link-widget">
-          <span style="font-size:14px;">🔗</span>
-          <span class="link-value" id="user-link-text">t.me/akilum_anon_bot?start=anon_...</span>
-          <button class="btn btn-copy" onclick="copyShareLink()" id="btn-copy">Копия</button>
-        </div>
-        <button class="btn btn-gradient" onclick="openShareTelegram()" id="btn-share">📲 Опубликовать в Сторис</button>
-        <button class="btn btn-secondary" onclick="generateAndSaveStory()" id="btn-story">📸 Создать Сторис-карточку</button>
-      </div>
-
-      <div class="metrics-row">
-        <div class="metric-card"><div class="metric-value" id="metric-questions">0</div><div class="metric-desc" id="lbl-questions">Вопросов</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-answers">0</div><div class="metric-desc" id="lbl-answers">Ответов</div></div>
-        <div class="metric-card"><div class="metric-value" id="metric-stars" style="background:linear-gradient(135deg,#FFE259 0%,#FFA751 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">0</div><div class="metric-desc">⭐ Звёзд</div></div>
-      </div>
-    </main>
-
-    <!-- TAB 2: НАПИСАТЬ -->
-    <main id="view-ask" class="tab-view">
-      <div class="input-card">
-        <!-- Recipient selector -->
-        <div class="recipient-box">
-          <div class="recipient-label" id="lbl-recipient">КОМУ ОТПРАВИТЬ:</div>
-          <div class="recipient-tabs">
-            <div class="recipient-tab active" id="rtab-self" onclick="switchRecipient('self',this)" id="lbl-rtab-self">👤 Себе (тест)</div>
-            <div class="recipient-tab" id="rtab-friend" onclick="switchRecipient('friend',this)" id="lbl-rtab-friend">🔍 Другому</div>
-          </div>
-          <div class="recipient-input-wrap" id="friend-input-wrap">
-            <input type="text" class="recipient-input" id="recipient-query" placeholder="@username или числовой ID" oninput="onRecipientInput()" autocapitalize="none" autocorrect="off">
-            <div class="recipient-found" id="recipient-found"></div>
+        <div id="story-preview" class="story-preview">
+          <div id="story-inner" class="story-inner">
+            <div class="story-tag" id="story-tag">⚡ АНОНИМНЫЙ ВОПРОС</div>
+            <div class="story-question" id="story-question">Напиши мне всё,<br>о чём ты молчишь...</div>
+            <div class="story-sub">🤫 100% анонимно • @akilum_anon_bot</div>
           </div>
         </div>
 
-        <div class="preview-pill" style="margin-bottom:12px;"><span>🔒</span> <span id="lbl-anon-hidden">Твоё имя и контакт скрыты</span></div>
-        <textarea id="ask-textarea" class="textarea-field" maxlength="800" oninput="handleCharCount()" id="ask-textarea"></textarea>
-        <div class="input-bottom-bar">
-          <button class="dice-action-btn" onclick="spinDice()">
-            <span class="dice-icon" id="dice-spin">🎲</span>
-            <span id="lbl-random">Случайный вопрос</span>
+        <span class="label-sm" id="t-choose-color">1. Выбери цвет карточки:</span>
+        <div class="grid-4">
+          <button class="choice-btn active" onclick="pickTheme('lum', this)">⚡ Бирюзовый Лам</button>
+          <button class="choice-btn" onclick="pickTheme('gold', this)">👑 Золотой VIP</button>
+          <button class="choice-btn" onclick="pickTheme('obsidian', this)">🖤 Тёмный стиль</button>
+          <button class="choice-btn" onclick="pickTheme('sakura', this)">🌸 Неон Сакура</button>
+        </div>
+
+        <span class="label-sm" id="t-choose-text">2. Выбери текст призыва:</span>
+        <div class="grid-4">
+          <button class="choice-btn active" onclick="pickPrompt('Напиши мне всё,\nо чём ты молчишь...', this)">Напиши мне всё...</button>
+          <button class="choice-btn" onclick="pickPrompt('Угадай, кто мне\nсейчас нравится? 🤫', this)">Кто мне нравится? 🤫</button>
+          <button class="choice-btn" onclick="pickPrompt('Оцени мой вайб\nот 1 до 10 🔥', this)">Оцени вайб 1-10 🔥</button>
+          <button class="choice-btn" onclick="pickPrompt('Задай самый смелый\nвопрос про нас 👀', this)">Смелый вопрос 👀</button>
+        </div>
+
+        <button class="btn btn-primary" onclick="sendStoryToChat()" id="t-btn-get-story">
+          📸 Прислать эту картинку мне в чат
+        </button>
+      </div>
+
+      <!-- Статистика -->
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-q">0</div>
+          <div class="stat-label" id="t-stat-q">Вопросов</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-a">0</div>
+          <div class="stat-label" id="t-stat-a">Ответов</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-s" style="color: var(--gold);">0 ⭐</div>
+          <div class="stat-label" id="t-stat-s">Звёзд</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         ВКЛАДКА 2: НАПИСАТЬ АНОНИМНЫЙ ВОПРОС
+         ========================================== -->
+    <section id="view-ask" class="view">
+      <div class="card">
+        <span class="step-badge" id="t-ask-step1">ШАГ 1 • ПОЛУЧАТЕЛЬ</span>
+        <div class="card-title" id="t-who-title">Кому отправить сообщение?</div>
+        <div class="card-desc" id="t-who-desc">Можешь протестировать отправку на себе или найти друга по @username:</div>
+
+        <div class="seg-row">
+          <button class="seg-btn active" id="seg-self" onclick="setRecipientMode('self')">👤 Себе (тест)</button>
+          <button class="seg-btn" id="seg-friend" onclick="setRecipientMode('friend')">🎯 Другу (@юзернейм)</button>
+        </div>
+
+        <div id="friend-search-block" style="display: none;">
+          <div class="search-row">
+            <input type="text" id="friend-input" class="input-box" placeholder="Введи @username или ID друга" autocapitalize="none">
+            <button class="find-btn" onclick="findRecipientUser()" id="t-btn-find">Найти</button>
+          </div>
+          <div id="recipient-status" class="status-banner"></div>
+        </div>
+
+        <div id="self-status-block" class="status-banner ok" style="display: block;">
+          ✅ Получатель: Ты сам (тестовое сообщение придёт тебе в бот)
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="step-badge" id="t-ask-step2">ШАГ 2 • ТЕКСТ СООБЩЕНИЯ</span>
+        <div class="card-title" id="t-msg-title">Напиши анонимный вопрос</div>
+        <div class="card-desc" id="t-msg-desc">🔒 100% анонимно — получатель никогда не узнает, кто написал.</div>
+
+        <textarea id="question-input" class="textarea-box" maxlength="800" placeholder="Напиши сюда вопрос, признание или секрет..." oninput="updateCounter()"></textarea>
+
+        <div class="textarea-footer">
+          <button class="dice-btn" onclick="insertRandomQuestion()">
+            <span>🎲</span> <span id="t-random-btn">Случайный вопрос</span>
           </button>
-          <span class="char-limit" id="char-label">0 / 800</span>
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);" id="char-count">0 / 800</span>
+        </div>
+
+        <button class="btn btn-primary" onclick="sendAnonQuestion()" id="t-btn-send-free">
+          🚀 Отправить анонимно (Бесплатно)
+        </button>
+
+        <button class="btn btn-gold" onclick="sendVipSuperQuestion()" id="t-btn-send-vip">
+          👑 Отправить VIP Супер-вопрос (50 ⭐)
+        </button>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         ВКЛАДКА 3: ВХОДЯЩИЕ ВОПРОСЫ
+         ========================================== -->
+    <section id="view-inbox" class="view">
+      <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;">
+        <div>
+          <div class="card-title" style="margin-bottom: 2px;" id="t-inbox-h">💌 Входящие вопросы</div>
+          <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;" id="t-inbox-sub">Отвечай прямо здесь или делись в Сторис</div>
+        </div>
+        <button class="lum-change-btn" onclick="loadUserData()" id="t-btn-refresh">🔄 Обновить</button>
+      </div>
+
+      <div id="inbox-list">
+        <div class="card" style="text-align: center; padding: 32px 18px; color: var(--text-muted);">
+          Пока вопросов нет. Скопируй свою ссылку на первой вкладке и выложи в Сторис!
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         ВКЛАДКА 4: ХАРАКТЕР ЛАМ И PREMIUM ⭐
+         ========================================== -->
+    <section id="view-premium" class="view">
+      <!-- Выбор характера Лам -->
+      <div class="card">
+        <span class="step-badge" id="t-pers-badge">🎭 НАСТРОЙКА ПЕРСОНАЖА</span>
+        <div class="card-title" id="t-pers-title">Выбери характер Лам</div>
+        <div class="card-desc" id="t-pers-desc">Нажми на карточку, чтобы изменить манеру общения бота:</div>
+
+        <div class="pers-grid">
+          <div class="pers-card active" id="pcard-tsundere" onclick="selectPersonality('tsundere')">
+            <span class="pers-check">✓</span>
+            <div class="pers-icon">⚡</div>
+            <div class="pers-title" id="p-title-tsundere">Дерзкая</div>
+            <div class="pers-quote" id="p-quote-tsundere">«Бака, Дарлинг! Не думай, что я ради тебя!»</div>
+          </div>
+
+          <div class="pers-card" id="pcard-kawaii" onclick="selectPersonality('kawaii')">
+            <span class="pers-check">✓</span>
+            <div class="pers-icon">❤️</div>
+            <div class="pers-title" id="p-title-kawaii">Влюблённая</div>
+            <div class="pers-quote" id="p-quote-kawaii">«Дарлинг~! Я так ждала твоих секретов~»</div>
+          </div>
+
+          <div class="pers-card" id="pcard-alien" onclick="selectPersonality('alien')">
+            <span class="pers-check">✓</span>
+            <div class="pers-icon">🛸</div>
+            <div class="pers-title" id="p-title-alien">Пришелец</div>
+            <div class="pers-quote" id="p-quote-alien">«Землянин! Квантовый сигнал перехвачен!»</div>
+          </div>
+
+          <div class="pers-card" id="pcard-flirty" onclick="selectPersonality('flirty')">
+            <span class="pers-check">✓</span>
+            <div class="pers-icon">😉</div>
+            <div class="pers-title" id="p-title-flirty">Кокетливая</div>
+            <div class="pers-quote" id="p-quote-flirty">«Между нами пробежали искры, Дарлинг...»</div>
+          </div>
         </div>
       </div>
 
-      <button class="btn btn-gradient" onclick="submitAnonymousQuestion()" id="btn-send">🚀 Отправить анонимно</button>
-      <button class="btn btn-secondary" style="background:linear-gradient(135deg,rgba(255,226,89,0.12) 0%,rgba(255,167,81,0.08) 100%);border:1px solid rgba(255,215,0,0.25);color:#FFD700;" onclick="showDonateModal()" id="btn-super">👑 Поддержать со Звёздами ⭐</button>
-      <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--text-ter);font-weight:700;" id="lbl-delivery">⚡ Вопрос придёт получателю прямо в Telegram</div>
-    </main>
-
-    <!-- TAB 3: ВХОДЯЩИЕ -->
-    <main id="view-inbox" class="tab-view">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <span class="section-label" id="lbl-inbox-title" style="margin-bottom:0;">ПОЛУЧЕННЫЕ ВОПРОСЫ</span>
-        <button onclick="loadInbox()" style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:800;cursor:pointer;">Обновить 🔄</button>
+      <!-- Витрина Premium и Оплата Звёздами -->
+      <div class="vip-banner">
+        <h2>👑 Akilum Premium</h2>
+        <p id="t-vip-sub">Открой все эксклюзивные дизайны Сторис, золотую корону VIP и приоритет доставки!</p>
       </div>
-      <div class="inbox-list" id="inbox-container">
-        <div class="inbox-item" style="text-align:center;color:var(--text-ter);padding:28px 16px;" id="inbox-empty-msg">
-          Пока вопросов нет. Прикрепи ссылку в Сторис, чтобы начать получать секреты!
+
+      <div class="card">
+        <div class="card-title" id="t-stars-title">⭐ Выбери пакет Telegram Stars</div>
+        <div class="card-desc" id="t-stars-desc">Оплата откроется мгновенно прямо на экране через официальные Звёзды Telegram:</div>
+
+        <div class="tier-item">
+          <div class="tier-info">
+            <h4 id="tier1-t">⚡ Искры Лам</h4>
+            <p id="tier1-d">Символический донат и поддержка проекта</p>
+          </div>
+          <button class="tier-buy-btn" onclick="openStarsCheckout(15)">15 ⭐ Купить</button>
+        </div>
+
+        <div class="tier-item">
+          <div class="tier-info">
+            <h4 id="tier2-t">⚡ Разряд Молнии</h4>
+            <p id="tier2-d">Супер-статус + открывает VIP-рамку вопросов</p>
+          </div>
+          <button class="tier-buy-btn" onclick="openStarsCheckout(50)">50 ⭐ Купить</button>
+        </div>
+
+        <div class="tier-item popular">
+          <div class="tier-info">
+            <h4 id="tier3-t">👑 Супернова VIP (ХИТ 🔥)</h4>
+            <p id="tier3-d">Полный Akilum Premium + все скины Сторис + Корона</p>
+          </div>
+          <button class="tier-buy-btn" onclick="openStarsCheckout(150)">150 ⭐ Купить</button>
+        </div>
+
+        <div class="tier-item">
+          <div class="tier-info">
+            <h4 id="tier4-t">🌌 Галактический Спонсор</h4>
+            <p id="tier4-d">Вечный VIP статус + личная благодарность от Лам</p>
+          </div>
+          <button class="tier-buy-btn" onclick="openStarsCheckout(500)">500 ⭐ Купить</button>
         </div>
       </div>
-    </main>
-
-    <!-- TAB 4: PREMIUM -->
-    <main id="view-premium" class="tab-view">
-      <div class="premium-hero">
-        <div class="premium-hero-title">👑 Akilum Premium</div>
-        <div class="premium-hero-sub" id="lbl-premium-sub">Раскрой все возможности Лам</div>
-      </div>
-
-      <div class="glass-card">
-        <div class="feature-list">
-          <div class="feature-item">
-            <div class="feature-icon">⚡</div>
-            <div><div class="feature-text-title" id="feat1-title">Эксклюзивные скины Сторис</div><div class="feature-text-desc" id="feat1-desc">Gold VIP, Obsidian Stealth, Sakura — все для избранных</div></div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🌌</div>
-            <div><div class="feature-text-title" id="feat2-title">VIP-статус в профиле</div><div class="feature-text-desc" id="feat2-desc">Звёздный значок и аура Лам — заметный и роскошный</div></div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🎭</div>
-            <div><div class="feature-text-title" id="feat3-title">Все характеры Лам</div><div class="feature-text-desc" id="feat3-desc">Цундэрэ, Каваии, Пришелец, Флирт — полный доступ</div></div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">🌐</div>
-            <div><div class="feature-text-title" id="feat4-title">Мультиязычность RU/EN/日本語</div><div class="feature-text-desc" id="feat4-desc">Бот говорит на твоём языке — интерфейс и уведомления</div></div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon">💎</div>
-            <div><div class="feature-text-title" id="feat5-title">Золотая VIP-рамка</div><div class="feature-text-desc" id="feat5-desc">Твои вопросы приходят с VIP-обрамлением и приоритетом</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-label" id="lbl-support-title" style="margin-bottom:10px;">⭐ ПОДДЕРЖАТЬ АВТОРА:</div>
-      <div class="tier-card t15" onclick="buyStars(15)">
-        <div><div class="tier-name" id="tier15-name">⚡ Искры Лам</div><div class="tier-desc" id="tier15-desc">Милый знак внимания и поддержка бота</div></div>
-        <div style="text-align:right;"><div class="tier-stars">15 ⭐</div><div class="tier-badge" id="tier15-badge">Поддержать</div></div>
-      </div>
-      <div class="tier-card t50" onclick="buyStars(50)">
-        <div><div class="tier-name" id="tier50-name">⚡ Разряд Молнии</div><div class="tier-desc" id="tier50-desc">Супер-вопрос с золотой рамкой + донат автору</div></div>
-        <div style="text-align:right;"><div class="tier-stars">50 ⭐</div><div class="tier-badge" id="tier50-badge">Супер-вопрос</div></div>
-      </div>
-      <div class="tier-card t150" onclick="buyStars(150)">
-        <div><div class="tier-name" id="tier150-name">👑 Супернова VIP 🌟</div><div class="tier-desc" id="tier150-desc">Akilum Premium на 1 год: все скины + VIP-значок</div></div>
-        <div style="text-align:right;"><div class="tier-stars">150 ⭐</div><div class="tier-badge" id="tier150-badge">🔥 ХИТ • 85%</div></div>
-      </div>
-      <div class="tier-card t500" onclick="buyStars(500)">
-        <div><div class="tier-name" id="tier500-name">🌌 Галактический Спонсор 🪐</div><div class="tier-desc" id="tier500-desc">Вечный Premium + эксклюзивное признание от Лам</div></div>
-        <div style="text-align:right;"><div class="tier-stars">500 ⭐</div><div class="tier-badge" id="tier500-badge">💎 ЛЕГЕНДА</div></div>
-      </div>
-    </main>
+    </section>
   </div>
+
+  <!-- Нижняя панель навигации (4 понятные вкладки) -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-share" onclick="openTab('share')">
+      <span class="nav-icon">🔗</span>
+      <span class="nav-text" id="t-nav-share">Ссылка</span>
+    </button>
+    <button class="nav-item" id="nav-ask" onclick="openTab('ask')">
+      <span class="nav-icon">✍️</span>
+      <span class="nav-text" id="t-nav-ask">Написать</span>
+    </button>
+    <button class="nav-item" id="nav-inbox" onclick="openTab('inbox')">
+      <span class="nav-icon">💌</span>
+      <span class="nav-text" id="t-nav-inbox">Входящие</span>
+    </button>
+    <button class="nav-item vip-nav" id="nav-premium" onclick="openTab('premium')">
+      <span class="nav-icon">👑</span>
+      <span class="nav-text" id="t-nav-premium">Премиум</span>
+    </button>
+  </nav>
 
   <script>
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
       tg.expand();
-      try { tg.setHeaderColor('#07090e'); tg.setBackgroundColor('#07090e'); } catch(e){}
+      try {
+        tg.setHeaderColor('#0b101b');
+        tg.setBackgroundColor('#0b101b');
+      } catch (e) {}
     }
 
-    // ============================
-    // i18n — мультиязычность
-    // ============================
-    const LANGS = {
+    const currentUserId = tg?.initDataUnsafe?.user?.id || 8513097259;
+    const botTag = 'akilum_anon_bot';
+    const personalUrl = `https://t.me/${botTag}?start=anon_${currentUserId}`;
+
+    let currentLang = 'ru';
+    let currentPersonality = 'tsundere';
+    let currentTheme = 'lum';
+    let currentPrompt = 'Напиши мне всё,\nо чём ты молчишь...';
+    let recipientMode = 'self';
+    let resolvedTargetId = currentUserId;
+    let resolvedTargetName = 'Ты сам (тест)';
+
+    // Проверка deep-link параметра (если открыли чужую ссылку)
+    const startParam = tg?.initDataUnsafe?.start_param || '';
+    if (startParam.startsWith('anon_')) {
+      const idFromUrl = Number(startParam.replace('anon_', ''));
+      if (idFromUrl && idFromUrl !== currentUserId) {
+        recipientMode = 'friend';
+        resolvedTargetId = idFromUrl;
+      }
+    }
+
+    document.getElementById('my-link-box').textContent = personalUrl;
+
+    // Словари переводов (RU, EN, JA)
+    const I18N = {
       ru: {
-        flag:'🇷🇺', code:'RU',
-        tagline:'АНОНИМНО',
-        greeting:'Привет,',
-        tabShare:'Поделиться', tabAsk:'Написать', tabInbox:'Входящие',
-        styleLabel:'🎨 СТИЛЬ КАРТОЧКИ:', topicLabel:'💬 ТЕМА ДЛЯ СТОРИС:',
-        myLinkLabel:'ТВОЯ ССЫЛКА ДЛЯ СТОРИС',
-        copyBtn:'Копия', shareBtn:'📲 Опубликовать в Сторис', storyBtn:'📸 Создать Сторис-карточку',
-        questionsLabel:'Вопросов', answersLabel:'Ответов',
-        recipientLabel:'КОМУ ОТПРАВИТЬ:', recipientSelf:'👤 Себе (тест)', recipientFriend:'🔍 Другому',
-        recipientPlaceholder:'@username или числовой ID',
-        anonHidden:'Твоё имя и контакт скрыты',
-        randomLabel:'Случайный вопрос',
-        sendBtn:'🚀 Отправить анонимно',
-        superBtn:'👑 Поддержать со Звёздами ⭐',
-        deliveryLabel:'⚡ Вопрос придёт получателю прямо в Telegram',
-        inboxTitle:'ПОЛУЧЕННЫЕ ВОПРОСЫ',
-        inboxEmpty:'Пока вопросов нет. Прикрепи ссылку в Сторис!',
-        premiumSub:'Раскрой все возможности Лам',
-        feat1:'Эксклюзивные скины Сторис','feat1d':'Gold VIP, Obsidian Stealth, Sakura',
-        feat2:'VIP-статус в профиле','feat2d':'Звёздный значок и аура Лам',
-        feat3:'Все характеры Лам','feat3d':'Цундэрэ, Каваии, Пришелец, Флирт',
-        feat4:'Мультиязычность RU/EN/日本語','feat4d':'Бот говорит на твоём языке',
-        feat5:'Золотая VIP-рамка','feat5d':'Твои вопросы приходят с VIP-обрамлением',
-        supportTitle:'⭐ ПОДДЕРЖАТЬ АВТОРА:',
-        t15name:'⚡ Искры Лам', t15desc:'Милый знак внимания', t15badge:'Поддержать',
-        t50name:'⚡ Разряд Молнии', t50desc:'Супер-вопрос с золотой рамкой', t50badge:'Супер-вопрос',
-        t150name:'👑 Супернова VIP', t150desc:'Premium на 1 год: все скины + VIP', t150badge:'🔥 ХИТ • 85%',
-        t500name:'🌌 Галактический Спонсор', t500desc:'Вечный Premium + признание от Лам', t500badge:'💎 ЛЕГЕНДА',
-        copied:'✓ Ссылка скопирована!',
-        sent:'✓ Вопрос отправлен анонимно!',
-        needText:'⚠️ Напиши что-нибудь!',
-        userNotFound:'⚠️ Пользователь не найден',
-        personality:'🎭 Характер:',
-        pNames:{tsundere:'⚡ Дерзкая', kawaii:'❤️ Милая', alien:'🛸 Пришелец', flirty:'😉 Флирт'},
+        navShare: 'Ссылка', navAsk: 'Написать', navInbox: 'Входящие', navPremium: 'Премиум',
+        changePersBtn: '🎭 Характер',
+        step1: 'ШАГ 1 • ТВОЯ ССЫЛКА',
+        linkTitle: 'Получай анонимные вопросы',
+        linkDesc: 'Скопируй свою ссылку и добавь её в Instagram или Telegram Stories:',
+        btnCopy: '📋 Скопировать', btnShare: '📲 Поделиться',
+        step2: 'ШАГ 2 • КАРТИНКА ДЛЯ СТОРИС',
+        storyTitle: 'Создай красивую Сторис',
+        storyDesc: 'Выбери цвет и надпись — бот мгновенно пришлёт готовую картинку в чат:',
+        chooseColor: '1. Выбери цвет карточки:',
+        chooseText: '2. Выбери текст призыва:',
+        btnGetStory: '📸 Прислать эту картинку мне в чат',
+        statQ: 'Вопросов', statA: 'Ответов', statS: 'Звёзд',
+        askStep1: 'ШАГ 1 • ПОЛУЧАТЕЛЬ',
+        whoTitle: 'Кому отправить сообщение?',
+        whoDesc: 'Можешь протестировать отправку на себе или найти друга по @username:',
+        segSelf: '👤 Себе (тест)', segFriend: '🎯 Другу (@юзернейм)',
+        btnFind: 'Найти',
+        askStep2: 'ШАГ 2 • ТЕКСТ СООБЩЕНИЯ',
+        msgTitle: 'Напиши анонимный вопрос',
+        msgDesc: '🔒 100% анонимно — получатель никогда не узнает, кто написал.',
+        randomBtn: 'Случайный вопрос',
+        btnSendFree: '🚀 Отправить анонимно (Бесплатно)',
+        btnSendVip: '👑 Отправить VIP Супер-вопрос (50 ⭐)',
+        inboxH: '💌 Входящие вопросы',
+        inboxSub: 'Отвечай прямо здесь или делись в Сторис',
+        btnRefresh: '🔄 Обновить',
+        persBadge: '🎭 НАСТРОЙКА ПЕРСОНАЖА',
+        persTitle: 'Выбери характер Лам',
+        persDesc: 'Нажми на карточку, чтобы изменить манеру общения бота:',
+        vipSub: 'Открой все эксклюзивные дизайны Сторис, золотую корону VIP и приоритет доставки!',
+        starsTitle: '⭐ Выбери пакет Telegram Stars',
+        starsDesc: 'Оплата откроется мгновенно прямо на экране через официальные Звёзды Telegram:',
+        pNames: {
+          tsundere: '⚡ Дерзкая Лам ▾',
+          kawaii: '❤️ Милая Лам ▾',
+          alien: '🛸 Пришелец Лам ▾',
+          flirty: '😉 Кокетливая Лам ▾'
+        },
+        pGreetings: {
+          tsundere: '⚡ «Бака, Дарлинг! Скопируй ссылку и выложи в Сторис, чтобы получать секреты!»',
+          kawaii: '❤️ «Дарлинг~! Я так ждала тебя! Давай соберём много милых признаний~»',
+          alien: '🛸 «Землянин! Квантовый передатчик готов к приёму секретных сообщений!»',
+          flirty: '😉 «М-м-м, Дарлинг... Давай узнаем, кто о тебе тайно мечтает~»'
+        }
       },
       en: {
-        flag:'🇬🇧', code:'EN',
-        tagline:'ANONYMOUS',
-        greeting:'Hello,',
-        tabShare:'Share', tabAsk:'Ask', tabInbox:'Inbox',
-        styleLabel:'🎨 CARD STYLE:', topicLabel:'💬 STORY TOPIC:',
-        myLinkLabel:'YOUR STORY LINK',
-        copyBtn:'Copy', shareBtn:'📲 Share to Stories', storyBtn:'📸 Create Story Card',
-        questionsLabel:'Questions', answersLabel:'Answers',
-        recipientLabel:'SEND TO:', recipientSelf:'👤 Myself (Test)', recipientFriend:'🔍 Someone Else',
-        recipientPlaceholder:'@username or numeric ID',
-        anonHidden:'Your identity is 100% hidden',
-        randomLabel:'Random question',
-        sendBtn:'🚀 Send Anonymously',
-        superBtn:'👑 Support with Stars ⭐',
-        deliveryLabel:'⚡ Message delivered directly in Telegram',
-        inboxTitle:'RECEIVED QUESTIONS',
-        inboxEmpty:'No questions yet. Post your link in Stories!',
-        premiumSub:'Unlock Lum\'s full power',
-        feat1:'Exclusive Story Skins','feat1d':'Gold VIP, Obsidian Stealth, Sakura',
-        feat2:'VIP Profile Status','feat2d':'Star badge and Lum alien aura',
-        feat3:'All Lum Personalities','feat3d':'Tsundere, Kawaii, Alien, Flirty',
-        feat4:'Multilingual RU/EN/日本語','feat4d':'Bot speaks your language',
-        feat5:'Gold VIP Frame','feat5d':'Your questions arrive with VIP glow',
-        supportTitle:'⭐ SUPPORT THE CREATOR:',
-        t15name:'⚡ Lum\'s Spark', t15desc:'Sweet token of support', t15badge:'Support',
-        t50name:'⚡ Lightning Bolt', t50desc:'Super-question with gold frame', t50badge:'Super-Q',
-        t150name:'👑 Supernova VIP', t150desc:'1-Year Premium: all skins + VIP', t150badge:'🔥 TOP • 85%',
-        t500name:'🌌 Galactic Lord', t500desc:'Lifetime Premium + Lum dedication', t500badge:'💎 LEGEND',
-        copied:'✓ Link copied!',
-        sent:'✓ Secret sent anonymously!',
-        needText:'⚠️ Please write something!',
-        userNotFound:'⚠️ User not found',
-        personality:'🎭 Personality:',
-        pNames:{tsundere:'⚡ Tsundere', kawaii:'❤️ Sweet', alien:'🛸 Alien', flirty:'😉 Flirty'},
+        navShare: 'My Link', navAsk: 'Send', navInbox: 'Inbox', navPremium: 'Premium',
+        changePersBtn: '🎭 Character',
+        step1: 'STEP 1 • YOUR LINK',
+        linkTitle: 'Receive Anonymous Questions',
+        linkDesc: 'Copy your personal link and paste it into your Instagram or Telegram Stories:',
+        btnCopy: '📋 Copy Link', btnShare: '📲 Share Link',
+        step2: 'STEP 2 • STORY CARD',
+        storyTitle: 'Generate a Story Image',
+        storyDesc: 'Pick a style and prompt — the bot will send the high-res card straight to your chat:',
+        chooseColor: '1. Choose card color:',
+        chooseText: '2. Choose card prompt:',
+        btnGetStory: '📸 Send Story Image to Chat',
+        statQ: 'Questions', statA: 'Replies', statS: 'Stars',
+        askStep1: 'STEP 1 • RECIPIENT',
+        whoTitle: 'Who is this message for?',
+        whoDesc: 'Test it on yourself or search for a friend by @username or ID:',
+        segSelf: '👤 To Myself (Test)', segFriend: '🎯 To a Friend (@user)',
+        btnFind: 'Find',
+        askStep2: 'STEP 2 • YOUR SECRET MESSAGE',
+        msgTitle: 'Write an anonymous message',
+        msgDesc: '🔒 100% anonymous — the recipient will never know your identity.',
+        randomBtn: 'Random Question',
+        btnSendFree: '🚀 Send Anonymously (Free)',
+        btnSendVip: '👑 Send VIP Super-Question (50 ⭐)',
+        inboxH: '💌 Received Questions',
+        inboxSub: 'Reply right here or share to your Stories',
+        btnRefresh: '🔄 Refresh',
+        persBadge: '🎭 LUM PERSONALITY',
+        persTitle: 'Choose Lum\'s Personality',
+        persDesc: 'Tap a card to change how Lum talks and delivers messages:',
+        vipSub: 'Unlock all exclusive Story skins, Gold VIP Crown, and top delivery priority!',
+        starsTitle: '⭐ Choose Telegram Stars Pack',
+        starsDesc: 'Official Telegram Stars checkout opens right on your screen:',
+        pNames: {
+          tsundere: '⚡ Tsundere Lum ▾',
+          kawaii: '❤️ Sweet Lum ▾',
+          alien: '🛸 Alien Lum ▾',
+          flirty: '😉 Flirty Lum ▾'
+        },
+        pGreetings: {
+          tsundere: '⚡ "Baka, Darling! Copy your link and post it to Stories right now!"',
+          kawaii: '❤️ "Darling~! I missed you! Let\'s collect sweet confessions together~"',
+          alien: '🛸 "Earthling! Quantum transmitter is ready for incoming secrets!"',
+          flirty: '😉 "Mmm, Darling... Let\'s find out who has a secret crush on you~"'
+        }
       },
       ja: {
-        flag:'🇯🇵', code:'JA',
-        tagline:'完全匿名',
-        greeting:'こんにちは、',
-        tabShare:'シェア', tabAsk:'質問', tabInbox:'受信箱',
-        styleLabel:'🎨 カードスタイル:', topicLabel:'💬 ストーリーテーマ:',
-        myLinkLabel:'ストーリー用リンク',
-        copyBtn:'コピー', shareBtn:'📲 ストーリーでシェア', storyBtn:'📸 ストーリーカードを作成',
-        questionsLabel:'質問数', answersLabel:'返答数',
-        recipientLabel:'送信先：', recipientSelf:'👤 自分宛て（テスト）', recipientFriend:'🔍 他の人へ',
-        recipientPlaceholder:'@ユーザー名またはID',
-        anonHidden:'あなたの名前と連絡先は完全に非表示っちゃ！',
-        randomLabel:'ランダム質問',
-        sendBtn:'🚀 匿名で送信する',
-        superBtn:'👑 星で応援する ⭐',
-        deliveryLabel:'⚡ メッセージはTelegramで直接届くっちゃ',
-        inboxTitle:'受信した質問',
-        inboxEmpty:'まだ質問がないっちゃ。ストーリーにリンクを貼ってね！',
-        premiumSub:'ラムの全機能を解放するっちゃ',
-        feat1:'限定ストーリースキン','feat1d':'Gold VIP・Obsidian Stealth・Sakura',
-        feat2:'VIPプロフィール','feat2d':'星バッジとラムのオーラ',
-        feat3:'全キャラクター','feat3d':'ツンデレ・カワイイ・宇宙人・魅惑',
-        feat4:'多言語 RU/EN/日本語','feat4d':'ボットがあなたの言語で話すっちゃ',
-        feat5:'ゴールドVIPフレーム','feat5d':'質問がVIPフレーム付きで届くっちゃ',
-        supportTitle:'⭐ 作者を応援する：',
-        t15name:'⚡ ラムの電撃スパーク', t15desc:'可愛いご支援', t15badge:'応援',
-        t50name:'⚡ 稲妻ボルト', t50desc:'黄金フレーム付きスーパー質問', t50badge:'スーパー質問',
-        t150name:'👑 スーパーノヴァVIP', t150desc:'1年間プレミアム：全スキン＋VIP', t150badge:'🔥 人気・85%',
-        t500name:'🌌 銀河の覇者', t500desc:'永久プレミアム＋ラムの特別メッセージ', t500badge:'💎 レジェンド',
-        copied:'✓ リンクをコピーしたっちゃ！',
-        sent:'✓ 匿名メッセージを送信したっちゃ！',
-        needText:'⚠️ メッセージを入力してね！',
-        userNotFound:'⚠️ ユーザーが見つかりませんでした',
-        personality:'🎭 キャラクター：',
-        pNames:{tsundere:'⚡ ツンデレ', kawaii:'❤️ カワイイ', alien:'🛸 宇宙人', flirty:'😉 魅惑'},
+        navShare: 'リンク', navAsk: '質問する', navInbox: '受信箱', navPremium: 'VIP・性格',
+        changePersBtn: '🎭 性格変更',
+        step1: 'STEP 1 • あなたのリンク',
+        linkTitle: '匿名の質問を受け取ろう',
+        linkDesc: 'リンクをコピーしてInstagramやTelegramのストーリーに貼ってね：',
+        btnCopy: '📋 コピーする', btnShare: '📲 シェアする',
+        step2: 'STEP 2 • ストーリー画像',
+        storyTitle: 'ストーリー用カード作成',
+        storyDesc: '色とテーマを選ぶと、ボットがチャットに高画質画像をすぐ送るっちゃ：',
+        chooseColor: '1. カードの色を選択：',
+        chooseText: '2. メッセージを選択：',
+        btnGetStory: '📸 画像をチャットに送信する',
+        statQ: '質問数', statA: '返信数', statS: 'スター',
+        askStep1: 'STEP 1 • 送信先を選ぶ',
+        whoTitle: '誰にメッセージを送る？',
+        whoDesc: '自分宛てにテストするか、@ユーザー名で友達を検索してね：',
+        segSelf: '👤 自分宛て（テスト）', segFriend: '🎯 友達へ (@ユーザー名)',
+        btnFind: '検索',
+        askStep2: 'STEP 2 • 秘密のメッセージ',
+        msgTitle: '匿名メッセージを書く',
+        msgDesc: '🔒 100%完全匿名 — 誰が送ったか絶対にバレないっちゃ！',
+        randomBtn: 'ランダム質問',
+        btnSendFree: '🚀 匿名で送信する（無料）',
+        btnSendVip: '👑 VIPスーパー質問を送る (50 ⭐)',
+        inboxH: '💌 届いた質問一覧',
+        inboxSub: 'この画面で直接返信したりストーリー画像を作れるっちゃ',
+        btnRefresh: '🔄 更新',
+        persBadge: '🎭 ラムの性格設定',
+        persTitle: 'ラムの性格を選ぼう',
+        persDesc: 'カードをタップするとラムの話し方が変わるっちゃ：',
+        vipSub: '限定ストーリースキン・黄金のVIP王冠・最優先配信をすべて解放！',
+        starsTitle: '⭐ Telegram Stars パックを選択',
+        starsDesc: 'タップすると画面上でそのまま公式スター決済が開くっちゃ：',
+        pNames: {
+          tsundere: '⚡ ツンデレラム ▾',
+          kawaii: '❤️ 恋するラム ▾',
+          alien: '🛸 宇宙人ラム ▾',
+          flirty: '😉 魅惑のラム ▾'
+        },
+        pGreetings: {
+          tsundere: '⚡ 「ダーリンのバカッ！早くリンクをストーリーに貼るっちゃ！」',
+          kawaii: '❤️ 「ダーリン〜！会いたかったっちゃ！秘密の告白を集めよう〜」',
+          alien: '🛸 「地球人よ！量子アンテナが秘密の通信を待っているっちゃ！」',
+          flirty: '😉 「うふふ、ダーリン…誰があなたを狙ってるか暴いちゃおうか？」'
+        }
       }
     };
 
-    const SPICY_QUESTIONS = [
+    const RANDOM_Q = [
       "В кого ты тайно влюблен(а) прямо сейчас? 👀",
       "Твой самый кринжовый момент в жизни? 💀",
       "Что обо мне думают твои друзья? 🤫",
       "Если бы мы пошли гулять, куда бы ты позвал(а)? ✨",
       "Оцени меня от 1 до 10 честно 🔥",
       "Какой твой самый главный секрет? 🤐",
-      "Честно: я тебе нравлюсь? 😉",
-      "Какой самый безумный поступок ты делал(а)? 🚀",
-      "Ты веришь в любовь с первого взгляда? 💔",
-      "Какая твоя самая странная привычка? 😂",
-      "С кем бы ты хотел(а) застрять в лифте? 🙈",
+      "Честно: я тебе нравлюсь? 😉"
     ];
 
-    // State
-    const currentUserId = tg?.initDataUnsafe?.user?.id || 8513097259;
-    const userName = tg?.initDataUnsafe?.user?.first_name || 'Рам сан!';
-    const botTag = 'akilum_anon_bot';
-    const personalUrl = `https://t.me/${botTag}?start=anon_${currentUserId}`;
+    function haptic(type = 'light') {
+      try {
+        if (type === 'success') tg?.HapticFeedback?.notificationOccurred('success');
+        else if (type === 'heavy') tg?.HapticFeedback?.impactOccurred('heavy');
+        else tg?.HapticFeedback?.impactOccurred('light');
+      } catch (e) {}
+    }
 
-    let currentLang = 'ru';
-    let currentPersonality = 'tsundere';
-    let recipientMode = 'self'; // 'self' | 'friend'
-    let friendTargetId = null;
-    let selectedTheme = 'lum';
-    let selectedPrompt = 'Напиши мне всё,\nо чём ты молчишь...';
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2600);
+    }
 
-    // Auto-detect recipient from deep-link start_param (e.g. anon_8513097259)
-    const startParam = tg?.initDataUnsafe?.start_param || '';
-    let deepLinkTargetId = null;
-    if (startParam.startsWith('anon_')) {
-      deepLinkTargetId = Number(startParam.replace('anon_', ''));
-      if (deepLinkTargetId && deepLinkTargetId !== currentUserId) {
-        // Someone opened the app from someone else's link
-        recipientMode = 'friend';
-        friendTargetId = deepLinkTargetId;
+    // Переключение вкладок
+    function openTab(tabName) {
+      haptic('light');
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      document.getElementById(`view-${tabName}`).classList.add('active');
+      document.getElementById(`nav-${tabName}`).classList.add('active');
+
+      if (tabName === 'inbox') {
+        loadUserData();
       }
     }
 
-    function t(key) { return LANGS[currentLang][key] || LANGS.ru[key] || key; }
+    // Переключение языка (RU / EN / JA)
+    function setLang(lang) {
+      haptic('light');
+      currentLang = lang;
+      document.querySelectorAll('.lang-pill').forEach(b => b.classList.remove('active'));
+      document.getElementById(`lang-${lang}`).classList.add('active');
 
-    function applyLang() {
-      const L = LANGS[currentLang];
-      document.getElementById('lang-btn').textContent = `${L.flag} ${L.code}`;
-      document.getElementById('anon-label').textContent = L.tagline;
-      document.getElementById('greeting-name').textContent = `${L.greeting} ${userName}`;
+      const L = I18N[lang] || I18N.ru;
+      document.getElementById('t-nav-share').textContent = L.navShare;
+      document.getElementById('t-nav-ask').textContent = L.navAsk;
+      document.getElementById('t-nav-inbox').textContent = L.navInbox;
+      document.getElementById('t-nav-premium').textContent = L.navPremium;
+      document.getElementById('btn-change-pers').textContent = L.changePersBtn;
 
-      // Tabs
-      document.querySelector('#tab-share .tab-label').textContent = L.tabShare;
-      document.querySelector('#tab-ask .tab-label').textContent = L.tabAsk;
-      document.querySelector('#tab-inbox .tab-label').textContent = L.tabInbox;
+      document.getElementById('t-step1').textContent = L.step1;
+      document.getElementById('t-link-title').textContent = L.linkTitle;
+      document.getElementById('t-link-desc').textContent = L.linkDesc;
+      document.getElementById('t-btn-copy').textContent = L.btnCopy;
+      document.getElementById('t-btn-share').textContent = L.btnShare;
 
-      // Personality chips
-      const pNames = L.pNames;
-      document.querySelectorAll('.p-chip').forEach(c => {
-        const p = c.dataset.p;
-        if (pNames[p]) c.textContent = pNames[p];
+      document.getElementById('t-step2').textContent = L.step2;
+      document.getElementById('t-story-title').textContent = L.storyTitle;
+      document.getElementById('t-story-desc').textContent = L.storyDesc;
+      document.getElementById('t-choose-color').textContent = L.chooseColor;
+      document.getElementById('t-choose-text').textContent = L.chooseText;
+      document.getElementById('t-btn-get-story').textContent = L.btnGetStory;
+
+      document.getElementById('t-stat-q').textContent = L.statQ;
+      document.getElementById('t-stat-a').textContent = L.statA;
+      document.getElementById('t-stat-s').textContent = L.statS;
+
+      document.getElementById('t-ask-step1').textContent = L.askStep1;
+      document.getElementById('t-who-title').textContent = L.whoTitle;
+      document.getElementById('t-who-desc').textContent = L.whoDesc;
+      document.getElementById('seg-self').textContent = L.segSelf;
+      document.getElementById('seg-friend').textContent = L.segFriend;
+      document.getElementById('t-btn-find').textContent = L.btnFind;
+
+      document.getElementById('t-ask-step2').textContent = L.askStep2;
+      document.getElementById('t-msg-title').textContent = L.msgTitle;
+      document.getElementById('t-msg-desc').textContent = L.msgDesc;
+      document.getElementById('t-random-btn').textContent = L.randomBtn;
+      document.getElementById('t-btn-send-free').textContent = L.btnSendFree;
+      document.getElementById('t-btn-send-vip').textContent = L.btnSendVip;
+
+      document.getElementById('t-inbox-h').textContent = L.inboxH;
+      document.getElementById('t-inbox-sub').textContent = L.inboxSub;
+      document.getElementById('t-btn-refresh').textContent = L.btnRefresh;
+
+      document.getElementById('t-pers-badge').textContent = L.persBadge;
+      document.getElementById('t-pers-title').textContent = L.persTitle;
+      document.getElementById('t-pers-desc').textContent = L.persDesc;
+      document.getElementById('t-vip-sub').textContent = L.vipSub;
+      document.getElementById('t-stars-title').textContent = L.starsTitle;
+      document.getElementById('t-stars-desc').textContent = L.starsDesc;
+
+      updatePersonalityUI();
+      fetch(`/api/setlang?userId=${currentUserId}&lang=${lang}`).catch(() => {});
+    }
+
+    // Выбор характера Лам
+    function selectPersonality(p) {
+      haptic('success');
+      currentPersonality = p;
+      updatePersonalityUI();
+      const L = I18N[currentLang] || I18N.ru;
+      showToast(L.pGreetings[p]);
+      fetch(`/api/setpersonality?userId=${currentUserId}&personality=${p}`).catch(() => {});
+    }
+
+    function updatePersonalityUI() {
+      const L = I18N[currentLang] || I18N.ru;
+      document.getElementById('header-pers-badge').textContent = L.pNames[currentPersonality] || L.pNames.tsundere;
+      document.getElementById('lum-greeting-box').textContent = L.pGreetings[currentPersonality] || L.pGreetings.tsundere;
+
+      ['tsundere', 'kawaii', 'alien', 'flirty'].forEach(p => {
+        const el = document.getElementById(`pcard-${p}`);
+        if (el) el.classList.toggle('active', p === currentPersonality);
       });
-
-      // Share tab
-      document.getElementById('lbl-style').textContent = L.styleLabel;
-      document.getElementById('lbl-topic').textContent = L.topicLabel;
-      document.getElementById('lbl-mylink').textContent = L.myLinkLabel;
-      document.getElementById('btn-copy').textContent = L.copyBtn;
-      document.getElementById('btn-share').textContent = L.shareBtn;
-      document.getElementById('btn-story').textContent = L.storyBtn;
-      document.getElementById('lbl-questions').textContent = L.questionsLabel;
-      document.getElementById('lbl-answers').textContent = L.answersLabel;
-
-      // Ask tab
-      document.getElementById('lbl-recipient').textContent = L.recipientLabel;
-      document.getElementById('rtab-self').textContent = L.recipientSelf;
-      document.getElementById('rtab-friend').textContent = L.recipientFriend;
-      document.getElementById('recipient-query').placeholder = L.recipientPlaceholder;
-      document.getElementById('lbl-anon-hidden').textContent = L.anonHidden;
-      document.getElementById('lbl-random').textContent = L.randomLabel;
-      document.getElementById('btn-send').textContent = L.sendBtn;
-      document.getElementById('btn-super').textContent = L.superBtn;
-      document.getElementById('lbl-delivery').textContent = L.deliveryLabel;
-
-      // Inbox
-      document.getElementById('lbl-inbox-title').textContent = L.inboxTitle;
-
-      // Premium
-      document.getElementById('lbl-premium-sub').textContent = L.premiumSub;
-      document.getElementById('feat1-title').textContent = L.feat1;
-      document.getElementById('feat1-desc').textContent = L.feat1d;
-      document.getElementById('feat2-title').textContent = L.feat2;
-      document.getElementById('feat2-desc').textContent = L.feat2d;
-      document.getElementById('feat3-title').textContent = L.feat3;
-      document.getElementById('feat3-desc').textContent = L.feat3d;
-      document.getElementById('feat4-title').textContent = L.feat4;
-      document.getElementById('feat4-desc').textContent = L.feat4d;
-      document.getElementById('feat5-title').textContent = L.feat5;
-      document.getElementById('feat5-desc').textContent = L.feat5d;
-      document.getElementById('lbl-support-title').textContent = L.supportTitle;
-      document.getElementById('tier15-name').textContent = L.t15name;
-      document.getElementById('tier15-desc').textContent = L.t15desc;
-      document.getElementById('tier15-badge').textContent = L.t15badge;
-      document.getElementById('tier50-name').textContent = L.t50name;
-      document.getElementById('tier50-desc').textContent = L.t50desc;
-      document.getElementById('tier50-badge').textContent = L.t50badge;
-      document.getElementById('tier150-name').textContent = L.t150name;
-      document.getElementById('tier150-desc').textContent = L.t150desc;
-      document.getElementById('tier150-badge').textContent = L.t150badge;
-      document.getElementById('tier500-name').textContent = L.t500name;
-      document.getElementById('tier500-desc').textContent = L.t500desc;
-      document.getElementById('tier500-badge').textContent = L.t500badge;
-
-      // ask textarea placeholder
-      document.getElementById('ask-textarea').placeholder = currentLang === 'ja'
-        ? '秘密や本音の質問を書いてね…誰だかバレないっちゃ！'
-        : currentLang === 'en'
-          ? 'Write a secret, confession or burning question... 100% anonymous!'
-          : 'Напиши сюда секрет, честный вопрос или признание... Получатель никогда не узнает, кто это!';
     }
 
-    function cycleLang() {
-      triggerHaptic('light');
-      const order = ['ru','en','ja'];
-      const idx = order.indexOf(currentLang);
-      currentLang = order[(idx+1)%3];
-      applyLang();
-      // Save lang preference to bot
-      fetch(`/api/setlang?userId=${currentUserId}&lang=${currentLang}`).catch(()=>{});
+    // Копирование и отправка ссылки
+    function copyMyLink() {
+      haptic('success');
+      navigator.clipboard.writeText(personalUrl).then(() => {
+        showToast('✅ Ссылка скопирована!');
+      });
     }
 
-    // ============================
-    // Personality
-    // ============================
-    const P_GREETINGS = {
-      ru: {
-        tsundere: '⚡ «Бака, Дарлинг! Не думай, что я ради тебя!»',
-        kawaii: '❤️ «Дарлинг~! Я так ждала тебя~»',
-        alien: '🛸 «Землянин! Квантовый канал связи активен!»',
-        flirty: '😉 «Чувствуешь искры между нами?..»',
-      },
-      en: {
-        tsundere: '⚡ «Baka, Darling! It\'s not like I waited for you!»',
-        kawaii: '❤️ «Darling~! I missed you so much~»',
-        alien: '🛸 «Earthling! Quantum link active!»',
-        flirty: '😉 «Feel the sparks between us?..»',
-      },
-      ja: {
-        tsundere: '⚡ «ダーリンのバカッ！待ってなんかいないっちゃ！»',
-        kawaii: '❤️ «ダーリン〜！会いたかったっちゃ〜»',
-        alien: '🛸 «地球人よ！量子通信リンク完了っちゃ！»',
-        flirty: '😉 «二人の間にビリビリ電気が走ってるっちゃ…»',
-      }
+    function shareMyLink() {
+      haptic('heavy');
+      const text = encodeURIComponent('Задай мне анонимный вопрос 🤫👇');
+      const url = `https://t.me/share/url?url=${encodeURIComponent(personalUrl)}&text=${text}`;
+      if (tg) tg.openTelegramLink(url);
+      else window.open(url, '_blank');
+    }
+
+    // Настройка превью Сторис
+    const THEMES = {
+      lum: { bg: 'linear-gradient(135deg, #00F5D4 0%, #00B894 50%, #FFD000 100%)', inner: '#ffffff', text: '#0f172a', tag: '⚡ АНОНИМНЫЙ ВОПРОС' },
+      gold: { bg: 'linear-gradient(135deg, #FFE259 0%, #FFA751 50%, #FF5722 100%)', inner: '#121118', text: '#ffffff', tag: '👑 VIP ВОПРОС' },
+      obsidian: { bg: 'linear-gradient(135deg, #090c14 0%, #1a2236 100%)', inner: '#111624', text: '#ffffff', tag: '🖤 STEALTH РЕЖИМ' },
+      sakura: { bg: 'linear-gradient(135deg, #FF2A85 0%, #8A2387 50%, #00F0FF 100%)', inner: '#ffffff', text: '#0f172a', tag: '🌸 СЕКРЕТНЫЙ ВОПРОС' }
     };
 
-    function switchPersonality(p, btn) {
-      triggerHaptic('light');
-      currentPersonality = p;
-      document.querySelectorAll('.p-chip').forEach(c => c.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      const greet = (P_GREETINGS[currentLang] && P_GREETINGS[currentLang][p]) || P_GREETINGS.ru[p];
-      if (greet) showNotice(greet);
-      fetch(`/api/setpersonality?userId=${currentUserId}&personality=${p}`).catch(()=>{});
+    function pickTheme(theme, btn) {
+      haptic('light');
+      currentTheme = theme;
+      btn.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const t = THEMES[theme] || THEMES.lum;
+      document.getElementById('story-preview').style.background = t.bg;
+      document.getElementById('story-inner').style.background = t.inner;
+      document.getElementById('story-question').style.color = t.text;
+      document.getElementById('story-tag').textContent = t.tag;
     }
 
-    // ============================
-    // Recipients
-    // ============================
-    let recipientSearchTimer = null;
-
-    function switchRecipient(mode, btn) {
-      triggerHaptic('light');
-      recipientMode = mode;
-      document.querySelectorAll('.recipient-tab').forEach(t => t.classList.remove('active'));
+    function pickPrompt(prompt, btn) {
+      haptic('light');
+      currentPrompt = prompt;
+      btn.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const wrap = document.getElementById('friend-input-wrap');
-      if (mode === 'friend') {
-        wrap.classList.add('visible');
-        document.getElementById('recipient-query').focus();
-        if (deepLinkTargetId && deepLinkTargetId !== currentUserId) {
-          document.getElementById('recipient-query').value = String(deepLinkTargetId);
-          document.getElementById('recipient-found').textContent = `✓ ID: ${deepLinkTargetId}`;
-          friendTargetId = deepLinkTargetId;
+      document.getElementById('story-question').innerHTML = prompt.replace(/\n/g, '<br>');
+    }
+
+    // Отправка готовой картинки Сторис прямо в чат без закрытия приложения!
+    async function sendStoryToChat(qId = null) {
+      haptic('heavy');
+      showToast('⏳ Создаю картинку и отправляю в чат...');
+      try {
+        const res = await fetch('/api/story-card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUserId,
+            theme: currentTheme,
+            prompt: currentPrompt,
+            questionId: qId
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          haptic('success');
+          showToast('✅ Готово! Картинка отправлена тебе в чат с ботом!');
+        } else {
+          showToast('⚠️ Не удалось отправить картинку');
         }
-      } else {
-        wrap.classList.remove('visible');
-        friendTargetId = null;
-        document.getElementById('recipient-found').textContent = '';
+      } catch (e) {
+        showToast('⚠️ Ошибка соединения');
       }
     }
 
-    function onRecipientInput() {
-      clearTimeout(recipientSearchTimer);
-      const q = document.getElementById('recipient-query').value.trim();
-      if (!q) { document.getElementById('recipient-found').textContent = ''; friendTargetId = null; return; }
-      if (/^\d{5,}$/.test(q)) {
-        friendTargetId = Number(q);
-        document.getElementById('recipient-found').textContent = `✓ ID: ${q}`;
+    // Выбор получателя во вкладке "Написать"
+    function setRecipientMode(mode) {
+      haptic('light');
+      recipientMode = mode;
+      document.getElementById('seg-self').classList.toggle('active', mode === 'self');
+      document.getElementById('seg-friend').classList.toggle('active', mode === 'friend');
+
+      document.getElementById('friend-search-block').style.display = mode === 'friend' ? 'block' : 'none';
+      document.getElementById('self-status-block').style.display = mode === 'self' ? 'block' : 'none';
+
+      if (mode === 'self') {
+        resolvedTargetId = currentUserId;
+      } else {
+        resolvedTargetId = null;
+      }
+    }
+
+    async function findRecipientUser() {
+      const q = document.getElementById('friend-input').value.trim();
+      const banner = document.getElementById('recipient-status');
+      if (!q) {
+        banner.className = 'status-banner err';
+        banner.textContent = '⚠️ Введи @username или ID друга';
         return;
       }
-      recipientSearchTimer = setTimeout(async () => {
-        try {
-          const r = await fetch(`/api/finduser?q=${encodeURIComponent(q)}`);
-          const d = await r.json();
-          if (d.ok && d.user) {
-            friendTargetId = d.user.id;
-            document.getElementById('recipient-found').textContent = `✓ ${d.user.name}${d.user.username ? ' ' + d.user.username : ''}`;
-          } else {
-            friendTargetId = null;
-            document.getElementById('recipient-found').textContent = t('userNotFound');
-          }
-        } catch(e) { friendTargetId = null; }
-      }, 500);
-    }
 
-    // ============================
-    // Haptic & Toast
-    // ============================
-    function triggerHaptic(type='medium') {
+      haptic('light');
       try {
-        if (type==='light') tg?.HapticFeedback?.impactOccurred('light');
-        else if (type==='heavy') tg?.HapticFeedback?.impactOccurred('heavy');
-        else if (type==='success') tg?.HapticFeedback?.notificationOccurred('success');
-        else tg?.HapticFeedback?.impactOccurred('medium');
-      } catch(e){}
+        const res = await fetch(`/api/finduser?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (data.ok && data.user) {
+          resolvedTargetId = data.user.id;
+          banner.className = 'status-banner ok';
+          banner.textContent = `✅ Найден: ${data.user.name} ${data.user.username || ''}`;
+          haptic('success');
+        } else if (/^\d{5,}$/.test(q)) {
+          resolvedTargetId = Number(q);
+          banner.className = 'status-banner ok';
+          banner.textContent = `✅ Получатель по ID: ${q}`;
+        } else {
+          resolvedTargetId = null;
+          banner.className = 'status-banner err';
+          banner.textContent = '❌ Пользователь ещё не запускал бота. Попроси его нажать /start в боте или введи его числовой ID!';
+        }
+      } catch (e) {
+        banner.className = 'status-banner err';
+        banner.textContent = '⚠️ Ошибка поиска';
+      }
     }
 
-    function showNotice(text) {
-      const el = document.getElementById('toast');
-      document.getElementById('toast-msg').textContent = text;
-      el.classList.add('active');
-      setTimeout(() => el.classList.remove('active'), 2600);
+    function insertRandomQuestion() {
+      haptic('heavy');
+      const rand = RANDOM_Q[Math.floor(Math.random() * RANDOM_Q.length)];
+      document.getElementById('question-input').value = rand;
+      updateCounter();
     }
 
-    // ============================
-    // Navigation
-    // ============================
-    function switchNav(tab, btn) {
-      triggerHaptic('light');
-      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`view-${tab}`).classList.add('active');
-      btn.classList.add('active');
-      if (tab === 'inbox') loadInbox();
+    function updateCounter() {
+      const len = document.getElementById('question-input').value.length;
+      document.getElementById('char-count').textContent = `${len} / 800`;
     }
 
-    // ============================
-    // Share tab
-    // ============================
-    document.getElementById('user-link-text').textContent = personalUrl;
-
-    const THEME_STYLES = {
-      lum:{bg:'linear-gradient(135deg,#00F5D4 0%,#00B894 45%,#FFD600 100%)',cardBg:'#fff',text:'#111827',badge:'⚡ ask me anything',name:'⚡ Lum Signature'},
-      obsidian:{bg:'linear-gradient(135deg,#050608 0%,#141824 50%,#08090d 100%)',cardBg:'#11141c',text:'#fff',badge:'🖤 stealth secret',name:'🖤 Obsidian Stealth'},
-      gold:{bg:'linear-gradient(135deg,#FFE259 0%,#FFA751 50%,#FF5722 100%)',cardBg:'#121118',text:'#fff',badge:'👑 VIP Super-Question',name:'👑 Royal Gold VIP'},
-      sakura:{bg:'linear-gradient(135deg,#FF2A85 0%,#8A2387 50%,#00F0FF 100%)',cardBg:'#fff',text:'#111827',badge:'🌸 secret story',name:'🌸 Cyber Sakura'},
-    };
-
-    function setStoryTheme(theme, btn) {
-      triggerHaptic('light');
-      selectedTheme = theme;
-      document.querySelectorAll('.theme-pill').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const c = THEME_STYLES[theme] || THEME_STYLES.lum;
-      document.getElementById('story-preview-card').style.background = c.bg;
-      document.getElementById('story-inner-card').style.background = c.cardBg;
-      document.getElementById('story-text-el').style.color = c.text;
-      document.getElementById('story-badge-el').innerHTML = `<span>${c.badge.slice(0,2)}</span> ${c.badge.slice(2)}`;
-    }
-
-    function setStoryPrompt(prompt, btn) {
-      triggerHaptic('light');
-      selectedPrompt = prompt;
-      document.querySelectorAll('.prompt-chip').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('story-text-el').innerHTML = prompt.replace(/\n/g,'<br>');
-    }
-
-    function copyShareLink() {
-      triggerHaptic('success');
-      navigator.clipboard.writeText(personalUrl).then(() => showNotice(t('copied')));
-    }
-
-    function openShareTelegram() {
-      triggerHaptic('medium');
-      const caption = encodeURIComponent('Задай мне вопрос анонимно 🤫');
-      const url = `https://t.me/share/url?url=${encodeURIComponent(personalUrl)}&text=${caption}`;
-      tg ? tg.openTelegramLink(url) : window.open(url,'_blank');
-    }
-
-    function generateAndSaveStory() {
-      triggerHaptic('heavy');
-      if (tg) tg.close();
-      window.location.href = `https://t.me/${botTag}?start=story_${selectedTheme}_${encodeURIComponent(selectedPrompt)}`;
-    }
-
-    // ============================
-    // Ask tab
-    // ============================
-    function spinDice() {
-      triggerHaptic('heavy');
-      const dice = document.getElementById('dice-spin');
-      dice.style.transform = 'rotate(360deg)';
-      setTimeout(() => dice.style.transform = 'rotate(0deg)', 350);
-      const area = document.getElementById('ask-textarea');
-      area.value = SPICY_QUESTIONS[Math.floor(Math.random()*SPICY_QUESTIONS.length)];
-      handleCharCount();
-    }
-
-    function handleCharCount() {
-      const len = document.getElementById('ask-textarea').value.length;
-      document.getElementById('char-label').textContent = `${len} / 800`;
-    }
-
-    function getTargetId() {
-      if (recipientMode === 'self') return currentUserId;
-      if (friendTargetId) return friendTargetId;
-      return null;
-    }
-
-    async function submitAnonymousQuestion() {
-      const text = document.getElementById('ask-textarea').value.trim();
-      if (text.length < 2) { showNotice(t('needText')); triggerHaptic('light'); return; }
-
-      const targetId = getTargetId();
-      if (!targetId && recipientMode === 'friend') {
-        showNotice(t('userNotFound')); triggerHaptic('light'); return;
+    // Отправка бесплатного анонимного вопроса
+    async function sendAnonQuestion() {
+      const text = document.getElementById('question-input').value.trim();
+      if (text.length < 2) {
+        showToast('⚠️ Напиши текст вопроса!');
+        return;
       }
 
-      triggerHaptic('heavy');
-      showNotice('🚀 Отправка...');
+      const payload = { senderId: currentUserId, text };
+      if (recipientMode === 'self') {
+        payload.targetId = currentUserId;
+      } else {
+        const rawInput = document.getElementById('friend-input').value.trim();
+        if (resolvedTargetId) {
+          payload.targetId = resolvedTargetId;
+        } else if (rawInput) {
+          payload.targetQuery = rawInput;
+        } else {
+          showToast('⚠️ Укажи @username получателя!');
+          return;
+        }
+      }
+
+      haptic('heavy');
+      showToast('🚀 Отправляю секретное сообщение...');
 
       try {
-        const body = { senderId: currentUserId, text };
-        if (recipientMode === 'friend' && friendTargetId) {
-          body.targetId = friendTargetId;
-        } else if (recipientMode === 'friend') {
-          const q = document.getElementById('recipient-query').value.trim();
-          body.targetQuery = q;
-        } else {
-          body.targetId = currentUserId;
-        }
-
         const res = await fetch('/api/send', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(body)
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-        const d = await res.json();
-        if (d.ok) {
-          document.getElementById('ask-textarea').value = '';
-          handleCharCount();
-          showNotice(t('sent'));
-          triggerHaptic('success');
-        } else if (d.error === 'user_not_found') {
-          showNotice(t('userNotFound'));
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('question-input').value = '';
+          updateCounter();
+          haptic('success');
+          showToast('✅ Вопрос доставлен 100% анонимно!');
+          loadUserData();
+        } else if (data.error === 'user_not_found') {
+          showToast('❌ Получатель не найден. Проверь @username!');
         } else {
-          showNotice('Ошибка отправки');
+          showToast('⚠️ Ошибка при отправке');
         }
-      } catch(err) {
-        showNotice(t('sent')); // offline fallback
+      } catch (e) {
+        showToast('⚠️ Ошибка сети');
       }
     }
 
-    // ============================
-    // Premium / Stars
-    // ============================
-    function buyStars(amount) {
-      triggerHaptic('heavy');
-      if (tg) tg.close();
-      window.location.href = `https://t.me/${botTag}?start=donate_${amount}`;
+    // Отправка VIP Супер-вопроса за 50 Звёзд прямо внутри Mini App!
+    async function sendVipSuperQuestion() {
+      const text = document.getElementById('question-input').value.trim();
+      if (text.length < 2) {
+        showToast('⚠️ Сначала напиши текст своего VIP-вопроса!');
+        return;
+      }
+      const targetId = recipientMode === 'self' ? currentUserId : (resolvedTargetId || currentUserId);
+      await openStarsCheckout(50, 'super', targetId, text);
     }
 
-    function showDonateModal() {
-      triggerHaptic('medium');
-      switchNav('premium', document.getElementById('tab-premium'));
-    }
+    // НАТИВНАЯ ОПЛАТА TELEGRAM STARS ПРЯМО ПОВЕРХ ЭКРАНА (tg.openInvoice)
+    async function openStarsCheckout(stars, type = 'donate', targetId = currentUserId, text = '') {
+      haptic('heavy');
+      showToast(`⭐ Открываю оплату ${stars} Звёзд...`);
 
-    // ============================
-    // Inbox
-    // ============================
-    function escapeHtml(t) {
-      return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
+      try {
+        const res = await fetch('/api/create-invoice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: currentUserId,
+            stars,
+            type,
+            targetId,
+            text
+          })
+        });
+        const data = await res.json();
 
-    function loadInbox() {
-      fetch(`/api/user?id=${currentUserId}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.user) {
-            document.getElementById('metric-questions').textContent = data.user.questionsReceived || 0;
-            document.getElementById('metric-answers').textContent = data.user.repliesSent || 0;
-            document.getElementById('metric-stars').textContent = data.user.starsReceived || 0;
-            if (data.user.personality && data.user.personality !== currentPersonality) {
-              currentPersonality = data.user.personality;
-              document.querySelectorAll('.p-chip').forEach(c => {
-                c.classList.toggle('active', c.dataset.p === currentPersonality);
-              });
-            }
-            if (data.user.language && LANGS[data.user.language] && data.user.language !== currentLang) {
-              currentLang = data.user.language;
-              applyLang();
-            }
-          }
-          const container = document.getElementById('inbox-container');
-          if (data.questions && data.questions.length > 0) {
-            container.innerHTML = data.questions.map(q => {
-              const d = new Date(q.createdAt);
-              const time = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-              const vip = q.isSuper ? `<span style="color:#FFD700;font-weight:800;">👑 VIP (+${q.stars||50}⭐)</span> • ` : '';
-              return `
-                <div class="inbox-item" style="${q.isSuper?'border-color:rgba(255,215,0,0.4);box-shadow:0 8px 28px rgba(255,215,0,0.12);':''}">
-                  <div class="inbox-time">🕒 ${time} • ${vip}Анонимный вопрос</div>
-                  <div class="inbox-text">«${escapeHtml(q.text)}»</div>
-                  <div class="inbox-actions">
-                    <button class="pill-btn" onclick="openStoryForQ('${q.id}')">📸 В Сторис</button>
-                    <button class="pill-btn" onclick="answerQ('${q.id}')">💬 Ответить</button>
-                  </div>
-                </div>`;
-            }).join('');
+        if (data.ok && data.invoiceLink) {
+          if (tg && typeof tg.openInvoice === 'function') {
+            tg.openInvoice(data.invoiceLink, (status) => {
+              if (status === 'paid') {
+                haptic('success');
+                showToast('🎉 Оплата прошла успешно! Спасибо за Звёзды ⭐');
+                document.getElementById('question-input').value = '';
+                updateCounter();
+                loadUserData();
+              } else if (status === 'cancelled') {
+                showToast('Оплата отменена');
+              }
+            });
           } else {
-            container.innerHTML = `<div class="inbox-item" style="text-align:center;color:var(--text-ter);padding:28px 16px;">${t('inboxEmpty')}</div>`;
+            window.open(data.invoiceLink, '_blank');
           }
-        }).catch(()=>{});
+        } else {
+          showToast('⚠️ Не удалось создать счёт оплаты');
+        }
+      } catch (e) {
+        showToast('⚠️ Ошибка соединения при создании счёта');
+      }
     }
 
-    function openStoryForQ(qId) {
-      triggerHaptic('heavy');
-      if (tg) tg.close();
-      window.location.href = `https://t.me/${botTag}?start=card_${qId}_${selectedTheme}`;
+    // Загрузка входящих вопросов и статистики
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    function answerQ(qId) {
-      triggerHaptic('medium');
-      if (tg) tg.close();
-      window.location.href = `https://t.me/${botTag}?start=reply_${qId}`;
+    async function loadUserData() {
+      try {
+        const res = await fetch(`/api/user?id=${currentUserId}`);
+        const data = await res.json();
+
+        if (data.user) {
+          document.getElementById('stat-q').textContent = data.user.questionsReceived || 0;
+          document.getElementById('stat-a').textContent = data.user.repliesSent || 0;
+          document.getElementById('stat-s').textContent = `${data.user.starsReceived || 0} ⭐`;
+
+          if (data.user.personality && data.user.personality !== currentPersonality) {
+            currentPersonality = data.user.personality;
+            updatePersonalityUI();
+          }
+          if (data.user.language && I18N[data.user.language] && data.user.language !== currentLang) {
+            setLang(data.user.language);
+          }
+        }
+
+        const list = document.getElementById('inbox-list');
+        if (data.questions && data.questions.length > 0) {
+          list.innerHTML = data.questions.map(q => {
+            const d = new Date(q.createdAt);
+            const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+            const vipTag = q.isSuper ? `<span style="color: var(--gold);">👑 VIP Супер-вопрос (+${q.stars || 50} ⭐)</span>` : `<span>🔒 Анонимный вопрос</span>`;
+            const repliedBlock = q.replyText
+              ? `<div class="q-reply-done">✓ Твой ответ: «${escapeHtml(q.replyText)}»</div>`
+              : '';
+
+            return `
+              <div class="q-card ${q.isSuper ? 'vip' : ''}">
+                <div class="q-meta">
+                  ${vipTag}
+                  <span>🕒 ${time}</span>
+                </div>
+                <div class="q-body">«${escapeHtml(q.text)}»</div>
+                ${repliedBlock}
+                <div class="btn-row">
+                  <button class="btn btn-primary" onclick="toggleReplyBox('${q.id}')">💬 Ответить тут</button>
+                  <button class="btn btn-secondary" onclick="sendStoryToChat('${q.id}')">📸 В Сторис</button>
+                </div>
+                <div class="inline-reply-box" id="rbox-${q.id}">
+                  <div class="search-row">
+                    <input type="text" class="input-box" id="rinput-${q.id}" placeholder="Напиши свой ответ анониму...">
+                    <button class="find-btn" onclick="submitDirectReply('${q.id}')">Отправить</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (e) {}
     }
 
-    // Init
-    applyLang();
-    loadInbox();
+    function toggleReplyBox(qId) {
+      haptic('light');
+      const box = document.getElementById(`rbox-${qId}`);
+      if (box) {
+        box.classList.toggle('open');
+        if (box.classList.contains('open')) {
+          document.getElementById(`rinput-${qId}`)?.focus();
+        }
+      }
+    }
 
-    // If opened from a deep link targeting someone else — switch to Ask tab and pre-fill friend mode
-    if (deepLinkTargetId && deepLinkTargetId !== currentUserId) {
-      switchNav('ask', document.getElementById('tab-ask'));
-      switchRecipient('friend', document.getElementById('rtab-friend'));
+    async function submitDirectReply(qId) {
+      const inp = document.getElementById(`rinput-${qId}`);
+      const text = inp ? inp.value.trim() : '';
+      if (!text) {
+        showToast('⚠️ Напиши текст ответа!');
+        return;
+      }
+
+      haptic('heavy');
+      try {
+        const res = await fetch('/api/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questionId: qId, replyText: text })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          haptic('success');
+          showToast('✅ Ответ отправлен анониму!');
+          loadUserData();
+        } else {
+          showToast('⚠️ Ошибка при отправке ответа');
+        }
+      } catch (e) {
+        showToast('⚠️ Ошибка сети');
+      }
+    }
+
+    // Инициализация
+    updatePersonalityUI();
+    loadUserData();
+
+    if (recipientMode === 'friend' && resolvedTargetId !== currentUserId) {
+      openTab('ask');
+      setRecipientMode('friend');
+      document.getElementById('friend-input').value = String(resolvedTargetId);
+      findRecipientUser();
     }
   </script>
 </body>
