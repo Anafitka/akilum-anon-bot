@@ -794,7 +794,7 @@
         </div>
         <div>
           <div class="brand-name">AKILUM</div>
-          <div class="brand-status" id="header-pers-badge" onclick="openTab('premium')">⚡ Дерзкая Лам ▾</div>
+          <div class="brand-status" id="header-sub-badge">🔒 100% Анонимные вопросы</div>
         </div>
       </div>
 
@@ -804,14 +804,6 @@
         <button class="lang-pill" id="lang-ja" onclick="setLang('ja')">JP</button>
       </div>
     </header>
-
-    <!-- Живая фраза Лам + быстрая кнопка смены характера -->
-    <div class="lum-speech">
-      <div class="lum-speech-text" id="lum-greeting-box">
-        ⚡ «Бака, Дарлинг! Скопируй ссылку и выложи в Сторис, чтобы получать секреты!»
-      </div>
-      <button class="lum-change-btn" id="btn-change-pers" onclick="openTab('premium')">🎭 Характер</button>
-    </div>
 
     <!-- ==========================================
          ВКЛАДКА 1: МОЯ ССЫЛКА И СТОРИС
@@ -954,46 +946,9 @@
     </section>
 
     <!-- ==========================================
-         ВКЛАДКА 4: ХАРАКТЕР ЛАМ И PREMIUM ⭐
+         ВКЛАДКА 4: AKILUM PREMIUM ⭐
          ========================================== -->
     <section id="view-premium" class="view">
-      <!-- Выбор характера Лам -->
-      <div class="card">
-        <span class="step-badge" id="t-pers-badge">🎭 НАСТРОЙКА ПЕРСОНАЖА</span>
-        <div class="card-title" id="t-pers-title">Выбери характер Лам</div>
-        <div class="card-desc" id="t-pers-desc">Нажми на карточку, чтобы изменить манеру общения бота:</div>
-
-        <div class="pers-grid">
-          <div class="pers-card active" id="pcard-tsundere" onclick="selectPersonality('tsundere')">
-            <span class="pers-check">✓</span>
-            <div class="pers-icon">⚡</div>
-            <div class="pers-title" id="p-title-tsundere">Дерзкая</div>
-            <div class="pers-quote" id="p-quote-tsundere">«Бака, Дарлинг! Не думай, что я ради тебя!»</div>
-          </div>
-
-          <div class="pers-card" id="pcard-kawaii" onclick="selectPersonality('kawaii')">
-            <span class="pers-check">✓</span>
-            <div class="pers-icon">❤️</div>
-            <div class="pers-title" id="p-title-kawaii">Влюблённая</div>
-            <div class="pers-quote" id="p-quote-kawaii">«Дарлинг~! Я так ждала твоих секретов~»</div>
-          </div>
-
-          <div class="pers-card" id="pcard-alien" onclick="selectPersonality('alien')">
-            <span class="pers-check">✓</span>
-            <div class="pers-icon">🛸</div>
-            <div class="pers-title" id="p-title-alien">Пришелец</div>
-            <div class="pers-quote" id="p-quote-alien">«Землянин! Квантовый сигнал перехвачен!»</div>
-          </div>
-
-          <div class="pers-card" id="pcard-flirty" onclick="selectPersonality('flirty')">
-            <span class="pers-check">✓</span>
-            <div class="pers-icon">😉</div>
-            <div class="pers-title" id="p-title-flirty">Кокетливая</div>
-            <div class="pers-quote" id="p-quote-flirty">«Между нами пробежали искры, Дарлинг...»</div>
-          </div>
-        </div>
-      </div>
-
       <!-- Витрина Premium и Оплата Звёздами -->
       <div class="vip-banner">
         <h2>👑 Akilum Premium</h2>
@@ -1031,7 +986,7 @@
         <div class="tier-item">
           <div class="tier-info">
             <h4 id="tier4-t">🌌 Галактический Спонсор</h4>
-            <p id="tier4-d">Вечный VIP статус + личная благодарность от Лам</p>
+            <p id="tier4-d">Вечный VIP статус + личная благодарность от автора</p>
           </div>
           <button class="tier-buy-btn" onclick="openStarsCheckout(500)">500 ⭐ Купить</button>
         </div>
@@ -1290,7 +1245,13 @@
       document.getElementById('t-nav-ask').textContent = L.navAsk;
       document.getElementById('t-nav-inbox').textContent = L.navInbox;
       document.getElementById('t-nav-premium').textContent = L.navPremium;
-      document.getElementById('btn-change-pers').textContent = L.changePersBtn;
+
+      const subMap = {
+        ru: '🔒 100% Анонимные вопросы',
+        en: '🔒 100% Anonymous Secrets',
+        ja: '🔒 100% 完全匿名メッセージ'
+      };
+      document.getElementById('header-sub-badge').textContent = subMap[lang] || subMap.ru;
 
       document.getElementById('t-step1').textContent = L.step1;
       document.getElementById('t-link-title').textContent = L.linkTitle;
@@ -1327,36 +1288,11 @@
       document.getElementById('t-inbox-sub').textContent = L.inboxSub;
       document.getElementById('t-btn-refresh').textContent = L.btnRefresh;
 
-      document.getElementById('t-pers-badge').textContent = L.persBadge;
-      document.getElementById('t-pers-title').textContent = L.persTitle;
-      document.getElementById('t-pers-desc').textContent = L.persDesc;
       document.getElementById('t-vip-sub').textContent = L.vipSub;
       document.getElementById('t-stars-title').textContent = L.starsTitle;
       document.getElementById('t-stars-desc').textContent = L.starsDesc;
 
-      updatePersonalityUI();
       fetch(`/api/setlang?userId=${currentUserId}&lang=${lang}`).catch(() => {});
-    }
-
-    // Выбор характера Лам
-    function selectPersonality(p) {
-      haptic('success');
-      currentPersonality = p;
-      updatePersonalityUI();
-      const L = I18N[currentLang] || I18N.ru;
-      showToast(L.pGreetings[p]);
-      fetch(`/api/setpersonality?userId=${currentUserId}&personality=${p}`).catch(() => {});
-    }
-
-    function updatePersonalityUI() {
-      const L = I18N[currentLang] || I18N.ru;
-      document.getElementById('header-pers-badge').textContent = L.pNames[currentPersonality] || L.pNames.tsundere;
-      document.getElementById('lum-greeting-box').textContent = L.pGreetings[currentPersonality] || L.pGreetings.tsundere;
-
-      ['tsundere', 'kawaii', 'alien', 'flirty'].forEach(p => {
-        const el = document.getElementById(`pcard-${p}`);
-        if (el) el.classList.toggle('active', p === currentPersonality);
-      });
     }
 
     // Копирование и отправка ссылки
@@ -1611,10 +1547,6 @@
           document.getElementById('stat-a').textContent = data.user.repliesSent || 0;
           document.getElementById('stat-s').textContent = `${data.user.starsReceived || 0} ⭐`;
 
-          if (data.user.personality && data.user.personality !== currentPersonality) {
-            currentPersonality = data.user.personality;
-            updatePersonalityUI();
-          }
           if (data.user.language && I18N[data.user.language] && data.user.language !== currentLang) {
             setLang(data.user.language);
           }
@@ -1695,7 +1627,6 @@
     }
 
     // Инициализация
-    updatePersonalityUI();
     loadUserData();
 
     if (recipientMode === 'friend' && resolvedTargetId !== currentUserId) {

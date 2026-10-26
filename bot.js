@@ -104,7 +104,6 @@ async function initBotProfile() {
     await bot.api.setMyCommands([
       { command: "app", description: "⚡ Открыть Mini App" },
       { command: "start", description: "Моя ссылка и кабинет" },
-      { command: "personality", description: "🎭 Характер Лам" },
       { command: "premium", description: "👑 Akilum Premium ⭐" },
       { command: "lang", description: "🌐 Выбрать язык / Language" },
       { command: "story", description: "📸 Картинка для Сторис" },
@@ -112,20 +111,20 @@ async function initBotProfile() {
     ]);
     await bot.api.setMyDescription(
       "AKILUM — анонимные вопросы и признания для Instagram и Telegram Stories.\n\n" +
-      "⚡ Выбирай характер Лам, получай честные секреты и делись вирусными карточками!"
+      "⚡ Получай честные секреты от друзей и делись красивыми карточками в Сторис!"
     );
     await bot.api.setMyShortDescription(
       "Анонимные вопросы и секреты для твоих Stories 🤫⚡"
     );
-    // Компактная кнопка Mini App (версия v=6 для мгновенного обновления кэша)
+    // Компактная кнопка Mini App (версия v=7 для мгновенного обновления кэша)
     await bot.api.setChatMenuButton({
       menu_button: {
         type: "web_app",
         text: "⚡ App",
-        web_app: { url: "https://akilum-anon-bot.onrender.com?v=6" }
+        web_app: { url: "https://akilum-anon-bot.onrender.com?v=7" }
       }
     });
-    console.log("✓ Профиль и компактная кнопка Mini App (v=6) настроены");
+    console.log("✓ Профиль и компактная кнопка Mini App (v=7) настроены");
   } catch (e) {
     console.warn("Предупреждение профиля:", e.message);
   }
@@ -301,25 +300,19 @@ bot.command("start", async (ctx) => {
   // Обычный старт: показываем личный кабинет и персональную ссылку
   userStates.delete(userId);
   const myLink = `https://t.me/${botUsername}?start=anon_${userId}`;
-  const currentPers = getUserPersonality(userId);
-  const currentLang = getUserLanguage(userId);
-  const pers = getPersonality(currentPers);
-  const greetingText = pers.greeting[currentLang] || pers.greeting.ru;
 
   if (userId === OWNER_ID || payload === "menu") {
     const kb = new InlineKeyboard()
-      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com?v=6")
+      .webApp("⚡ Открыть Akilum Mini App", "https://akilum-anon-bot.onrender.com?v=7")
       .row()
-      .url("🔗 Поделиться", getShareUrl(userId))
-      .row()
-      .text("🎭 Характер Лам", "action:open_personality")
-      .text("👑 Premium ⭐", "action:open_premium")
+      .url("🔗 Поделиться ссылкой", getShareUrl(userId))
       .row()
       .text("📸 Картинка для Сторис", "action:promo_card")
+      .text("👑 Premium ⭐", "action:open_premium")
+      .row()
       .text("📊 Статистика", "action:my_stats");
 
     await ctx.reply(
-      `✨ <i>«${escapeHtml(greetingText)}»</i>\n\n` +
       `Твоя персональная ссылка для вопросов:\n` +
       `👉 <code>${myLink}</code>\n\n` +
       `Прикрепи её в <b>Instagram / Telegram Stories</b> или открой <b>Mini App</b> внизу 👇`,
@@ -336,16 +329,14 @@ bot.command("start", async (ctx) => {
   });
 
   const strangerKb = new InlineKeyboard()
-    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com?v=6")
+    .webApp("⚡ Открыть в приложении", "https://akilum-anon-bot.onrender.com?v=7")
     .row()
     .text("🎲 Случайный вопрос", `action:rand_${OWNER_ID}`)
     .text("🔗 Создать свою ссылку", "action:my_own_link")
     .row()
-    .text("🎭 Характер Лам", "action:open_personality")
     .text("👑 Premium ⭐", "action:open_premium");
 
   await ctx.reply(
-    `✨ <i>«${escapeHtml(greetingText)}»</i>\n\n` +
     `Напиши анонимный вопрос:\n` +
     `<i>(это 100% анонимно 🤫)</i>\n\n` +
     `👇 Отправь сообщение прямо сюда в чат:`,
@@ -357,7 +348,7 @@ bot.command("start", async (ctx) => {
 bot.command("app", async (ctx) => {
   const kb = new InlineKeyboard().webApp(
     "⚡ Открыть Akilum Mini App",
-    "https://akilum-anon-bot.onrender.com?v=6"
+    "https://akilum-anon-bot.onrender.com?v=7"
   );
   await ctx.reply(
     "✨ <b>Akilum Mini App</b>\n\n" +
@@ -374,30 +365,6 @@ bot.command("story", async (ctx) => {
 // Команда /stats
 bot.command("stats", async (ctx) => {
   await sendStats(ctx);
-});
-
-// Команда /personality — выбор характера Лам
-bot.command("personality", async (ctx) => {
-  const userId = ctx.from.id;
-  getOrCreateUser(userId, ctx.from.first_name, ctx.from.username || "");
-  const current = getUserPersonality(userId);
-
-  const kb = new InlineKeyboard()
-    .text(`⚡ Дерзкая${current === "tsundere" ? " ✓" : ""}`, "action:personality_tsundere")
-    .text(`❤️ Милая${current === "kawaii" ? " ✓" : ""}`, "action:personality_kawaii")
-    .row()
-    .text(`🛸 Пришелец${current === "alien" ? " ✓" : ""}`, "action:personality_alien")
-    .text(`😉 Флирт${current === "flirty" ? " ✓" : ""}`, "action:personality_flirty");
-
-  await ctx.reply(
-    `🎭 <b>Характер Лам</b>\n\n` +
-    `<b>⚡ Дерзкая (Цундэрэ)</b> — «Бака, Дарлинг! Не думай что я ради тебя!\"\n` +
-    `<b>❤️ Милая (Каваии)</b> — «Дарлинг~! Я так скучала по тебе~»\n` +
-    `<b>🛸 Пришелец (Они)</b> — «Землянин! Мой корабль перехватил сигнал 🛸»\n` +
-    `<b>😉 Флирт (Искры)</b> — «Чувствуешь электричество между нами? 😉»\n\n` +
-    `Текущий: <b>${getPersonality(current).name.ru}</b>`,
-    { parse_mode: "HTML", reply_markup: kb }
-  );
 });
 
 // Команда /lang — выбор языка
@@ -432,7 +399,6 @@ bot.command("premium", async (ctx) => {
   const features = [
     "⚡ <b>Эксклюзивные скины Сторис</b> — Gold VIP, Obsidian Stealth, Sakura",
     "🌌 <b>Статус «Звёздный» в профиле</b> — заметный VIP-значок",
-    "🎭 <b>Все характеры Лам</b> — Цундэрэ, Каваии, Пришелец, Флирт",
     "🌐 <b>Мультиязычность</b> — RU, EN, 日本語",
     "⚡ <b>Приоритет доставки</b> — твои вопросы первыми в очереди",
     "💎 <b>Золотая рамка VIP</b> на всех входящих вопросах",
@@ -449,7 +415,7 @@ bot.command("premium", async (ctx) => {
 
   await ctx.reply(
     premiumBanner + features + "\n\n" +
-    `<i>Выбери уровень поддержки — все Звёзды идут напрямую создателю Lam Bot ⭐</i>`,
+    `<i>Выбери уровень поддержки — все Звёзды идут напрямую создателю ⭐</i>`,
     { parse_mode: "HTML", reply_markup: kb }
   );
 });
@@ -1152,11 +1118,6 @@ bot.on("message:successful_payment", async (ctx) => {
     });
     addStarsToUser(targetId, stars);
 
-    // Определяем характер получателя для красивого уведомления
-    const receiverPersonality = getUserPersonality(targetId);
-    const receiverLang = getUserLanguage(targetId);
-    const personality = getPersonality(receiverPersonality);
-
     await ctx.reply(
       `✨ <b>Супер-вопрос успешно отправлен!</b> 💌\n\n` +
       `Донат <b>${stars} ⭐</b> начислен автору. Твой вопрос подсвечен золотой VIP-рамкой!`,
@@ -1168,15 +1129,12 @@ bot.on("message:successful_payment", async (ctx) => {
       .row()
       .text("💬 Ответить", `action:reply_${q.id}`);
 
-    const header = personality.superQuestionHeader[receiverLang] || personality.superQuestionHeader.ru;
-    const hint = personality.swipeHint[receiverLang] || personality.swipeHint.ru;
-
     const sentMsg = await bot.api.sendMessage(
       targetId,
-      `${header}\n\n` +
+      `👑 <b>VIP СУПЕР-ВОПРОС (${stars} ⭐):</b>\n\n` +
       `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
       `💰 <i>Тебе начислен донат <b>${stars} Звёзд Telegram</b> от анонима!</i>\n\n` +
-      hint,
+      `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
       { parse_mode: "HTML", reply_markup: recipientKb }
     );
     linkMessageToQuestion(sentMsg.message_id, targetId, q.id, "question");
@@ -1241,26 +1199,18 @@ const server = http.createServer((req, res) => {
         }
 
         if (text.length >= 2 && text.length <= 800) {
-          // Определяем характер и язык получателя
-          const receiverPersonality = getUserPersonality(targetId);
-          const receiverLang = getUserLanguage(targetId);
-          const personality = getPersonality(receiverPersonality);
-
           const q = saveQuestion(targetId, senderId, text);
           const recipientKb = new InlineKeyboard()
             .text("📸 Создать сторис", `action:card_${q.id}`)
             .row()
             .text("💬 Ответить", `action:reply_${q.id}`);
 
-          const header = personality.newQuestionHeader[receiverLang] || personality.newQuestionHeader.ru;
-          const hint = personality.swipeHint[receiverLang] || personality.swipeHint.ru;
-
           try {
             const sentMsg = await bot.api.sendMessage(
               targetId,
-              `${header}\n\n` +
+              `💌 <b>Новый анонимный вопрос:</b>\n\n` +
               `<blockquote>${escapeHtml(text)}</blockquote>\n\n` +
-              hint,
+              `<i>💡 Свайпни вправо («Ответить»), чтобы написать ответ:</i>`,
               { parse_mode: "HTML", reply_markup: recipientKb }
             );
             linkMessageToQuestion(sentMsg.message_id, targetId, q.id, "question");
